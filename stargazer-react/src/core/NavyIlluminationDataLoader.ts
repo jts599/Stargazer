@@ -9,6 +9,21 @@ interface IIlluminationDate {
 }
 
 
+export async function addIlluminationDataToCelestialDays(year: number, days: ICelestialDay[], timeShift: number): Promise<void> {
+    const illuminationData = await __loadIlluminationDataRaw(year, timeShift);
+    for (const day of days) {
+        const date = day.date;
+        const monthIndex = date.getMonth();
+        const dayOfMonth = date.getDate();
+        const illumination = illuminationData.find(d => d.month === monthIndex && d.day === dayOfMonth);
+        if (illumination) {
+            day.illuminationPercentage = illumination.illuminationPercentage;
+        } else {
+            day.illuminationPercentage = 0; // Default to 0 if no data found
+        }
+    }
+}
+
 async function __loadIlluminationDataRaw(year:number, timeShift: number) : Promise<IIlluminationDate[]> {
     const tzSign = timeShift < 0 ? -1 : 1;
     const tz = Math.abs(timeShift);

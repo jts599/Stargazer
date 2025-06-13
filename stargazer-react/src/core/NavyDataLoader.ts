@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CelestialBody, type ICelestialDay, type MinutesSinceNoon } from '../core/interfaces';
 import { minutesSinceNoon, monthToNavyAbreviation } from './helpers';
-
+import { addIlluminationDataToCelestialDays } from './NavyIlluminationDataLoader';
 
 
 /**
@@ -14,8 +14,7 @@ import { minutesSinceNoon, monthToNavyAbreviation } from './helpers';
  * @param latitude Latitude of the location.
  * @returns 
  */
-export async function LoadNavyDataRaw(body: CelestialBody, year: number, latitude:number, longitude:number): Promise<string> {
-    const timezone = -6 // Central Time Zone (UTC-6) - Should be dynamic based on location
+export async function LoadNavyDataRaw(body: CelestialBody, year: number, latitude:number, longitude:number, timezone:number): Promise<string> {
     const tzSign = timezone < 0 ? -1 : 1; // Sign of the timezone offset
     const tz = Math.abs(timezone); // Absolute value of the timezone offset
     const id = "SG"
@@ -32,14 +31,19 @@ export async function LoadNavyDataRaw(body: CelestialBody, year: number, latitud
 }
 
 export async function CollectCelestialData(year: number, latitude:number, longitude:number, sunOption: CelestialBody = CelestialBody.AstronomicalTwilight ) : Promise<ICelestialDay[]> {
-    const sunData = parseNavyTable(await LoadNavyDataRaw(sunOption, year, latitude, longitude));
-    const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude));
+    const timezone = -6; // Central Time Zone (UTC-6) - Should be dynamic based on location
+
+    const sunData = parseNavyTable(await LoadNavyDataRaw(sunOption, year, latitude, longitude, timezone));
+    const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude,timezone));
     const days: ICelestialDay[] = __setupCelestialEvents(year);
 
     for (const day of days) {
         __fillCelestialEvents(day, sunData, moonData);
     }
     __fillInEmptyMoonEvents(days);
+    addIlluminationDataToCelestialDays(year, days, timezone); // Assuming no time shift for simplicity
+
+
     return days;
 }
 
