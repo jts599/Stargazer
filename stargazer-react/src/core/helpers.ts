@@ -17,18 +17,40 @@ export function minutesSinceNoon(hour: number, minute: number): number {
  */
 export function monthToNavyAbreviation(month: number): string | null {
     switch (month) {
-        case 0: return "Jan.";
-        case 1: return "Feb.";
-        case 2: return "Mar.";
-        case 3: return "Apr.";
+        case 0: return "Jan";
+        case 1: return "Feb";
+        case 2: return "Mar";
+        case 3: return "Apr";
         case 4: return "May";
         case 5: return "June";
         case 6: return "July";
-        case 7: return "Aug.";
-        case 8: return "Sep.";
-        case 9: return "Oct.";
-        case 10: return "Nov.";
-        case 11: return "Dec.";
+        case 7: return "Aug";
+        case 8: return "Sep";
+        case 9: return "Oct";
+        case 10: return "Nov";
+        case 11: return "Dec";
     }
     return null;
+}
+
+
+/**
+ * Checks if a value is null, undefined, an empty string, an empty array, or an empty object.
+ * @param value The value to check.
+ * @returns True if the value is null, undefined, an empty string, an empty array, or an empty object; otherwise false.
+ */
+export function isNullOrEmpty(value: any): value is Exclude<any, (null | undefined)> {
+    if (value === null || value === undefined) {
+        return true;
+    }
+    if (typeof value === 'string') {
+        return value.trim() === '';
+    }
+    if (Array.isArray(value)) {
+        return value.length === 0;
+    }
+    if (typeof value === 'object') {
+        return Object.keys(value).length === 0;
+    }
+    return false;
 }

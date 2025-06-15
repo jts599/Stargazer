@@ -33,14 +33,17 @@ async function __loadIlluminationDataRaw(year:number, timeShift: number) : Promi
     
     
     const months: string[] = [];
+
+    const tableWithData = $('table').eq(1); // The second table contains the illumination data
+    const rows = tableWithData.find('tr')
     // Find the header row with months
-    $('table tr').eq(1).find('td').each((i, el) => {
+    rows.eq(1).find('td').each((i, el) => {
         if (i > 0) months.push($(el).text().replace('.', '').trim());
     });
 
     const results: IIlluminationDate[] = [];
     // Iterate over each data row
-    $('table tr').slice(2).each((_, row) => {
+    rows.slice(2).each((_, row) => {
         const cells = $(row).find('td');
         if (cells.length === 0) return;
         const day = parseInt($(cells[0]).text(), 10);

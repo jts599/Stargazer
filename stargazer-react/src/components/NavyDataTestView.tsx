@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LoadNavyDataRaw, CelestialBody } from '../core/NavyDataLoader';
+import { LoadNavyDataRaw, CollectCelestialData } from '../core/NavyDataLoader';
 
 export function NavyDataTestView(): React.ReactElement {
   const [navyData, setNavyData] = useState<string | null>(null);
@@ -7,7 +7,9 @@ export function NavyDataTestView(): React.ReactElement {
   useEffect(() => {
     async function fetchData() {
         if (navyData) return; // Prevent multiple fetches
-        const loadedNavyData = await LoadNavyDataRaw(CelestialBody.Moon, 2025, 43.09, -89.39);
+
+        const celestialData = await CollectCelestialData(2025, 43.09, -89.39);
+        const loadedNavyData = celestialData[0].sun?.rise?.toString() ?? 'No data available';
         setNavyData(loadedNavyData);
     }
     fetchData();

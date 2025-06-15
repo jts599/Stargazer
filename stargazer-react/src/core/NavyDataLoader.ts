@@ -35,13 +35,13 @@ export async function CollectCelestialData(year: number, latitude:number, longit
 
     const sunData = parseNavyTable(await LoadNavyDataRaw(sunOption, year, latitude, longitude, timezone));
     const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude,timezone));
-    const days: ICelestialDay[] = __setupCelestialEvents(year);
+    let days: ICelestialDay[] = __setupCelestialEvents(year);
 
     for (const day of days) {
         __fillCelestialEvents(day, sunData, moonData);
     }
     __fillInEmptyMoonEvents(days);
-    addIlluminationDataToCelestialDays(year, days, timezone); // Assuming no time shift for simplicity
+    await addIlluminationDataToCelestialDays(year, days, timezone); 
 
 
     return days;
@@ -81,6 +81,8 @@ function __fillCelestialEvents(day:ICelestialDay, sunEvents: INavyCelestialEvent
         };
     }
 
+    day.illuminationPercentage = 0;
+
     return day;
 }
 
@@ -103,10 +105,14 @@ function __fillInEmptyMoonEvents(days: ICelestialDay[]): void {
     }
 }
 
+
 function __estimateMoonTime(prevDay: MinutesSinceNoon | undefined, nextDay: MinutesSinceNoon | undefined): MinutesSinceNoon | undefined  {
     if (!prevDay && !nextDay) return undefined; // No data to estimate from
     if (prevDay && nextDay) {
-        return Math.floor((prevDay + nextDay) / 2);
+        prevDay += (12 * 60); // Adjust previous day to be in the same range as next day
+        nextDay += (12 * 60); // Adjust next day to be in the same range as previous day
+
+        return Math.floor((prevDay + nextDay) / 2) - (12 * 60); // Return average adjusted back to minutes since noon
     }
     if (prevDay) {
         return prevDay; // Use previous day's rise time
