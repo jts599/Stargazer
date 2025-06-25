@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { NavyDataTestView } from './components/NavyDataTestView'
 import { StargazerCalendar } from './components/StargazerCalendar'
 import { CollectCelestialData } from './core/NavyDataLoader'
 import type { ICelestialDay } from './core/interfaces'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'navy'>('calendar')
-  const [activeDate, setActiveDate] = useState<Date>(new Date());
   const [celestialData, setCelestialData] = useState<ICelestialDay[] | null>(null);
   
   useEffect(() => {
@@ -23,7 +20,7 @@ function App() {
   if (celestialData){
     return (
       <>
-      <StargazerCalendar year={2025}  />
+      <StargazerCalendar year={2025} celestialData={celestialData}  />
       </>
     );
   }
