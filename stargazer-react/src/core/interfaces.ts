@@ -29,5 +29,6 @@ export interface ICelestialDay {
     sun?: ICelectialDefinition;
     moon?: ICelectialDefinition;
     illuminationPercentage?: number;
+    stargazingScore?: number; // Score for the day based on celestial events
 };
 

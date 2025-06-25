@@ -1,4 +1,3 @@
-import { stringStream } from "cheerio";
 import type { ICelectialDefinition } from "./interfaces";
 import { isNullOrEmpty } from "./helpers";
 
@@ -9,9 +8,9 @@ interface IMoonFunctionDefinition {
     phaseShift?: number;
 }
 
-function calculateConstants(moon: ICelectialDefinition, nextDayMoon: ICelectialDefinition | undefined): IMoonFunctionDefinition | undefined {
+function calculateConstants(moon: ICelectialDefinition | undefined, nextDayMoon: ICelectialDefinition | undefined): IMoonFunctionDefinition | undefined {
     const results: IMoonFunctionDefinition = {};
-    if (!moon.rise || !moon.set) {
+    if (!moon?.rise || !moon?.set) {
         return undefined; // Not enough data to calculate
     }
     if (nextDayMoon && !isNullOrEmpty(nextDayMoon?.rise)) {
@@ -49,6 +48,17 @@ function integrate(start: number, end: number, constants: IMoonFunctionDefinitio
         sum += value;
     }
     return sum * step; // Multiply by the step size to get the area
+}
+
+
+export function scoreDay(sun: ICelectialDefinition | undefined, moon: ICelectialDefinition | undefined, nextDayMoon: ICelectialDefinition | undefined): number {
+    const constants = calculateConstants(moon, nextDayMoon);
+    if (!constants) {
+        return 0; // Not enough data to calculate
+    }
+    const start = sun?.set ?? 8*24 //Default to 8 pm if no set time
+    const end = sun?.rise ?? 18 * 60; // Default to 6 am if no rise time
+    return integrate(start, end, constants);
 }
 
 

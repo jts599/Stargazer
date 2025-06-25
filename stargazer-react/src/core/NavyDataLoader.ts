@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { CelestialBody, type ICelestialDay, type MinutesSinceNoon } from '../core/interfaces';
 import { minutesSinceNoon, monthToNavyAbreviation } from './helpers';
 import { addIlluminationDataToCelestialDays } from './NavyIlluminationDataLoader';
+import {scoreDay} from './ScoreCalculation';
 
 
 /**
@@ -30,8 +31,7 @@ export async function LoadNavyDataRaw(body: CelestialBody, year: number, latitud
 
 }
 
-export async function CollectCelestialData(year: number, latitude:number, longitude:number, sunOption: CelestialBody = CelestialBody.AstronomicalTwilight ) : Promise<ICelestialDay[]> {
-    const timezone = -6; // Central Time Zone (UTC-6) - Should be dynamic based on location
+export async function CollectCelestialData(year: number, latitude:number, longitude:number, sunOption: CelestialBody = CelestialBody.AstronomicalTwilight, timezone = -6 ) : Promise<ICelestialDay[]> {
 
     const sunData = parseNavyTable(await LoadNavyDataRaw(sunOption, year, latitude, longitude, timezone));
     const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude,timezone));
@@ -42,8 +42,20 @@ export async function CollectCelestialData(year: number, latitude:number, longit
     }
     __fillInEmptyMoonEvents(days);
     await addIlluminationDataToCelestialDays(year, days, timezone); 
+    __calculateStargazingScores(days);
 
 
+
+    return days;
+}
+
+function __calculateStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
+    for (let i = 0; i < days.length; i++) {
+        const day = days[i];
+        const nextDay = i < days.length - 1 ? days[i + 1] : null;
+        const score = scoreDay(day.sun, day.moon, nextDay?.moon);
+        day.stargazingScore = score;
+    }
     return days;
 }
 
@@ -107,20 +119,21 @@ function __fillInEmptyMoonEvents(days: ICelestialDay[]): void {
 
 
 function __estimateMoonTime(prevDay: MinutesSinceNoon | undefined, nextDay: MinutesSinceNoon | undefined): MinutesSinceNoon | undefined  {
-    if (!prevDay && !nextDay) return undefined; // No data to estimate from
-    if (prevDay && nextDay) {
-        prevDay += (12 * 60); // Adjust previous day to be in the same range as next day
-        nextDay += (12 * 60); // Adjust next day to be in the same range as previous day
+    if (!prevDay || !nextDay) return undefined; // No data to estimate from
 
-        return Math.floor((prevDay + nextDay) / 2) - (12 * 60); // Return average adjusted back to minutes since noon
+    if (prevDay < 0) {
+        prevDay += (24 * 60); // Adjust previous day to be in the same range as next day
+        prevDay %= (24 * 60); // Ensure it wraps around correctly
+
     }
-    if (prevDay) {
-        return prevDay; // Use previous day's rise time
+
+    if (nextDay < 0) {
+        nextDay += (24 * 60); // Adjust next day to be in the same range as previous day
+        nextDay %= (24 * 60); // Ensure it wraps around correctly
     }
-    if (nextDay) {
-        return nextDay; // Use next day's rise time
-    }
-    return undefined; // Fallback if no data is available
+
+
+    return Math.floor((prevDay + nextDay) / 2) - (24 * 60); // Return average adjusted back to minutes since noon
 }
 
 function __tryGetMinutesSinceNoon(time: string | null): MinutesSinceNoon | undefined{

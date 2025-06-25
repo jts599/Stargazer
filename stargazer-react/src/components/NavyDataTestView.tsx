@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LoadNavyDataRaw, CollectCelestialData } from '../core/NavyDataLoader';
+import { CollectCelestialData } from '../core/NavyDataLoader';
 
 export function NavyDataTestView(): React.ReactElement {
   const [navyData, setNavyData] = useState<string | null>(null);
