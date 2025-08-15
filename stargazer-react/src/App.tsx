@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { StargazerCalendar } from './components/StargazerCalendar'
 import { CollectCelestialData } from './core/NavyDataLoader'
-import type { ICelestialDay } from './core/interfaces'
+import { CelestialBody, type ICelestialDay } from './core/interfaces'
 
 function App() {
   const [celestialData, setCelestialData] = useState<ICelestialDay[] | null>(null);
@@ -11,7 +11,7 @@ function App() {
       async function fetchData() {
           if (celestialData) return; // Prevent multiple fetches
   
-          setCelestialData(await CollectCelestialData(2025, 43.09, -89.39));
+          setCelestialData(await CollectCelestialData(2025, 43.09, -89.39, CelestialBody.NauticalTwilight,-6));
       }
       fetchData();
     }, []);

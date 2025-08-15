@@ -26,12 +26,17 @@ export function matchCelestialDay(date: Date, celestialDays: ICelestialDay[]): I
  */
 export function formatMinutesSinceNoon(minutes: number | undefined): string {
 
+    const DEBUG = false;
+    if (DEBUG) {
+         return minutes?.toString(10) ?? "";
+    }
+    
     if (minutes === undefined || isNaN(minutes)) {
         return "Invalid time";
     }
 
     // Convert minutes since noon to hours and minutes
-    const date = __dateFromMinutesSinceNoon(minutes);
+    const date = dateFromMinutesSinceNoon(minutes);
     const hours = date.getHours();
     const mins = date.getMinutes();
     
@@ -65,7 +70,7 @@ export function monthToNavyAbreviation(month: number): string | null {
 }
 
 
-function __dateFromMinutesSinceNoon(minutes: number): Date {
+function dateFromMinutesSinceNoon(minutes: number): Date {
     // Calculate the date based on minutes since noon
         minutes = minutes + (12 * 60); // Adjust to get the actual time
         minutes = minutes % (24 * 60); // Wrap around if it exceeds 24 hours

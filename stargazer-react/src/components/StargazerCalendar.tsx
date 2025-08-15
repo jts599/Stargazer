@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Calendar } from './Calendar';
 import { CollectCelestialData } from '../core/NavyDataLoader';
 import type {  ICelestialDay } from '../core/interfaces';
@@ -24,6 +24,11 @@ export function StargazerCalendar(props: IStargazerCalendarProps): React.ReactEl
         setCurrentCelestialDay(day);
     };
 
+    const getScoreForDate = useCallback((date: Date): number => {
+        const day = matchCelestialDay(date, celestialData);
+        return day?.stargazingScore ?? 0;
+    }, [celestialData]);
+
     return (
         <>
             <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
@@ -35,6 +40,7 @@ export function StargazerCalendar(props: IStargazerCalendarProps): React.ReactEl
                     highlightedDates={celestialData.map(day => new Date(day.date))}
                     minDate={new Date(year, 0, 1)} // January 1, 2020
                     maxDate={new Date(year, 11, 31)} // December 31, 2030
+                    dateColorCodeFormatingFunction={getScoreForDate}
                 />
             </div>
             <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>

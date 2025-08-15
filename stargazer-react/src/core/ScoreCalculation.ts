@@ -25,6 +25,7 @@ function calculateConstants(moon: ICelectialDefinition | undefined, nextDayMoon:
     results.hConstant = Math.sin(insideSin)
     const phaseShiftSubtractor = (Math.PI * moon.rise) / (0.5 * results.MoonPeriod);
     results.phaseShift = (-1*Math.asin(results.hConstant)) - phaseShiftSubtractor;
+    return results
 }
 
 
@@ -40,6 +41,12 @@ const getValueAtTime = (time: number, constants: IMoonFunctionDefinition): numbe
 function integrate(start: number, end: number, constants: IMoonFunctionDefinition): number {
     const step = 1; // Integration step in minutes
     let sum = 0;
+    if (end <= start) {
+        let temp = end;
+        end = start
+        start = temp; // Ensure start is less than end
+    }
+
     for (let t = start; t <= end; t += step) {
         const value = getValueAtTime(t, constants);
         if (value < 0) {
@@ -57,7 +64,7 @@ export function scoreDay(sun: ICelectialDefinition | undefined, moon: ICelectial
         return 0; // Not enough data to calculate
     }
     const start = sun?.set ?? 8*24 //Default to 8 pm if no set time
-    const end = sun?.rise ?? 18 * 60; // Default to 6 am if no rise time
+    const end = start + 3*60; // 3 hours after sunset in minutes
     return integrate(start, end, constants);
 }
 

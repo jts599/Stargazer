@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import './Calendar.css';
+import type { ICelestialDay } from '../core/interfaces';
 
 interface CalendarProps {
   selectedDate?: Date;
@@ -8,6 +9,8 @@ interface CalendarProps {
   maxDate?: Date;
   highlightedDates?: Date[];
   className?: string;
+  //0-100, 0 is white, 100 is black
+  dateColorCodeFormatingFunction?: (date: Date) => number;
 }
 
 interface CalendarDay {
@@ -17,6 +20,11 @@ interface CalendarDay {
   isSelected: boolean;
   isHighlighted: boolean;
   isDisabled: boolean;
+  stargazingScore?: number; // Add stargazing score
+}
+
+function defaultScoreResolution(i:Date):number{
+  return 0;
 }
 
 export function Calendar({
@@ -25,7 +33,8 @@ export function Calendar({
   minDate,
   maxDate,
   highlightedDates = [],
-  className = ''
+  className = '',
+  dateColorCodeFormatingFunction = defaultScoreResolution
 }: CalendarProps): React.ReactElement {
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth()));
 
@@ -78,7 +87,8 @@ export function Calendar({
         isToday: isSameDay(date, today),
         isSelected: isSameDay(date, selectedDate),
         isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: isDateDisabled(date, minDate, maxDate)
+        isDisabled: isDateDisabled(date, minDate, maxDate),
+        stargazingScore: dateColorCodeFormatingFunction(date)
       });
     }
     
@@ -91,7 +101,8 @@ export function Calendar({
         isToday: isSameDay(date, today),
         isSelected: isSameDay(date, selectedDate),
         isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: isDateDisabled(date, minDate, maxDate)
+        isDisabled: isDateDisabled(date, minDate, maxDate),
+        stargazingScore: dateColorCodeFormatingFunction(date)
       });
     }
     
@@ -107,7 +118,8 @@ export function Calendar({
         isToday: isSameDay(date, today),
         isSelected: isSameDay(date, selectedDate),
         isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: isDateDisabled(date, minDate, maxDate)
+        isDisabled: isDateDisabled(date, minDate, maxDate),
+        stargazingScore: dateColorCodeFormatingFunction(date)
       });
     }
     
@@ -176,27 +188,34 @@ export function Calendar({
       </div>
 
       <div className="calendar-grid">
-        {calendarDays.map((day, index) => (
-          <button
-            key={index}
-            className={`calendar-day ${
-              day.isCurrentMonth ? 'current-month' : 'other-month'
-            } ${
-              day.isToday ? 'today' : ''
-            } ${
-              day.isSelected ? 'selected' : ''
-            } ${
-              day.isHighlighted ? 'highlighted' : ''
-            } ${
-              day.isDisabled ? 'disabled' : ''
-            }`}
-            onClick={() => handleDateClick(day)}
-            disabled={day.isDisabled}
-            aria-label={`${day.date.toLocaleDateString()}`}
-          >
-            {day.date.getDate()}
-          </button>
-        ))}
+        {calendarDays.map((day, index) => {
+          const textColor = day.stargazingScore !== undefined
+            ? `rgb(${255 - (day.stargazingScore * 2.55)}, ${255 - (day.stargazingScore * 2.55)}, ${255 - (day.stargazingScore * 2.55)})`
+            : 'inherit'; // Default to inherit if no score
+
+          return (
+            <button
+              key={index}
+              className={`calendar-day ${
+                day.isCurrentMonth ? 'current-month' : 'other-month'
+              } ${
+                day.isToday ? 'today' : ''
+              } ${
+                day.isSelected ? 'selected' : ''
+              } ${
+                day.isHighlighted ? 'highlighted' : ''
+              } ${
+                day.isDisabled ? 'disabled' : ''
+              }`}
+              onClick={() => handleDateClick(day)}
+              disabled={day.isDisabled}
+              aria-label={`${day.date.toLocaleDateString()}`}
+              style={{ color: textColor }} // Apply dynamic text color
+            >
+              {day.date.getDate()}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

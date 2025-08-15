@@ -19,6 +19,8 @@ export function DateDisplay({ celestialDay, selectedDate }: DateDisplayProps): R
             <div className="sunset">Sunset: {formatMinutesSinceNoon(celestialDay.sun?.set)}</div>
             <div className="moonrise">Moonrise: {formatMinutesSinceNoon(celestialDay?.moon?.rise)}</div>
             <div className="moonset">Moonset: {formatMinutesSinceNoon(celestialDay?.moon?.set)}</div>
+            <div className="moon-phase">Illumination Pct: {celestialDay.illuminationPercentage}</div>
+            <div className="stargazing-score">Stargazing Score: {celestialDay.stargazingScore}</div>
         </div>
     );
 }

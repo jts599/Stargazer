@@ -43,17 +43,29 @@ export async function CollectCelestialData(year: number, latitude:number, longit
     __fillInEmptyMoonEvents(days);
     await addIlluminationDataToCelestialDays(year, days, timezone); 
     __calculateStargazingScores(days);
-
-
-
+    __normalizeStargazingScores(days);
     return days;
 }
+
+function __normalizeStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
+    const maxScore = Math.max(...days.map(day => day.stargazingScore ?? 0));
+    if (maxScore === 0) return days; // Avoid division by zero
+    for (const day of days) {
+        if (day.stargazingScore === undefined) {
+            continue;
+        }
+        day.stargazingScore = (day.stargazingScore / maxScore) * 100; // Normalize to percentage
+        day.stargazingScore = 100 - day.stargazingScore; //lower is better    
+    }
+    return days;
+}
+
 
 function __calculateStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
     for (let i = 0; i < days.length; i++) {
         const day = days[i];
         const nextDay = i < days.length - 1 ? days[i + 1] : null;
-        const score = scoreDay(day.sun, day.moon, nextDay?.moon);
+        const score = (day?.illuminationPercentage ?? 0) * scoreDay(day.sun, day.moon, nextDay?.moon);
         day.stargazingScore = score;
     }
     return days;
