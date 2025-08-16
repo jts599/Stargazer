@@ -64,9 +64,8 @@ function __normalizeStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
 function __calculateStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
     for (let i = 0; i < days.length; i++) {
         const day = days[i];
-        const nextDay = i < days.length - 1 ? days[i + 1] : null;
-        const score = (day?.illuminationPercentage ?? 0) * scoreDay(day.sun, day.moon, nextDay?.moon);
-        day.stargazingScore = score;
+        const nextDay = i < days.length - 1 ? days[i + 1] : undefined;
+        scoreDay(day, nextDay);
     }
     return days;
 }
@@ -130,7 +129,18 @@ function __fillInEmptyMoonEvents(days: ICelestialDay[]): void {
 }
 
 
-function __estimateMoonTime(prevDay: MinutesSinceNoon | undefined, nextDay: MinutesSinceNoon | undefined): MinutesSinceNoon | undefined  {
+const EstimationMode = {
+    average: 0,
+    nextDay: 1
+} as const;
+type EstimationMode = typeof EstimationMode[keyof typeof EstimationMode];
+
+function __estimateMoonTime(prevDay: MinutesSinceNoon | undefined, nextDay: MinutesSinceNoon | undefined, estimationMode: EstimationMode = EstimationMode.nextDay): MinutesSinceNoon | undefined  {
+
+    if (estimationMode === EstimationMode.nextDay) {
+        return nextDay
+    }
+
     if (!prevDay || !nextDay) return undefined; // No data to estimate from
 
     if (prevDay < 0) {
@@ -145,7 +155,24 @@ function __estimateMoonTime(prevDay: MinutesSinceNoon | undefined, nextDay: Minu
     }
 
 
-    return Math.floor((prevDay + nextDay) / 2) - (24 * 60); // Return average adjusted back to minutes since noon
+    const result =  Math.floor((prevDay + nextDay) / 2) - (24 * 60); // Return average adjusted back to minutes since noon
+    return __ensureMinutesSinceNoonProperSignage(result); // Ensure the result is in the correct range
+}
+
+function __ensureMinutesSinceNoonProperSignage(time: MinutesSinceNoon):MinutesSinceNoon {
+    const abs = Math.abs(time);
+    const sign = time < 0 ? -1 : 1; // Preserve the sign of the time
+
+    if (abs > (24 * 60)) {
+        time = sign * (abs % (24*60))
+    }
+    if(abs < (12*60)){
+        return time; // No adjustment needed
+    }
+
+    const diff = abs - (12 * 60); // how far off from midnight it is
+    const res = (12*60)-diff;   // how far off from noon it is
+    return -1 * sign * res;     //make sure direction is correct
 }
 
 function __tryGetMinutesSinceNoon(time: string | null): MinutesSinceNoon | undefined{
@@ -162,9 +189,6 @@ function getEventForDate(events: INavyCelestialEvent[], date: Date): INavyCelest
     const day = date.getDate();
     return events.find(e => e.month === month && e.day === day) || null;
 }
-
-
-
 
 export interface INavyCelestialEvent {
     day: number;

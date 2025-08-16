@@ -25,11 +25,6 @@ export function matchCelestialDay(date: Date, celestialDays: ICelestialDay[]): I
  * @returns ""HH:MM AM/PM"" formatted string representing the time.
  */
 export function formatMinutesSinceNoon(minutes: number | undefined): string {
-
-    const DEBUG = false;
-    if (DEBUG) {
-         return minutes?.toString(10) ?? "";
-    }
     
     if (minutes === undefined || isNaN(minutes)) {
         return "Invalid time";

@@ -29,6 +29,15 @@ export interface ICelestialDay {
     sun?: ICelectialDefinition;
     moon?: ICelectialDefinition;
     illuminationPercentage?: number;
+    moonFunctionConstants?: IMoonFunctionDefinition;
     stargazingScore?: number; // Score for the day based on celestial events
+    
 };
+
+export interface IMoonFunctionDefinition {
+    MoonPeriod?: number;
+    MoonWidth?: number; //Moonset - Moonrise
+    hConstant?: number; //Moonrise - Noon
+    phaseShift?: number;
+}
 
