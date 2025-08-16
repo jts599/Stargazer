@@ -56,7 +56,7 @@ export function monthToNavyAbreviation(month: number): string | null {
         case 5: return "June";
         case 6: return "July";
         case 7: return "Aug";
-        case 8: return "Sep";
+        case 8: return "Sept";
         case 9: return "Oct";
         case 10: return "Nov";
         case 11: return "Dec";

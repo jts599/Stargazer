@@ -208,10 +208,9 @@ export function parseNavyTable(raw: string): INavyCelestialEvent[] {
     const events: INavyCelestialEvent[] = [];
     for (const line of dataLines) {
         const day = parseInt(line.slice(0, 2), 10);
-        let rest = line.slice(2).trim();
+        let rest = line.slice(4);
         // Each month has two 4-char fields (rise/set), possibly blank
         for (let m = 0; m < months.length; m++) {
-            rest = rest.trim();
             const riseStart = m*11
             const setStart = riseStart + 5
             const rise = rest.slice(riseStart, riseStart+4).trim() || null;
