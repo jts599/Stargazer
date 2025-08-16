@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Calendar } from './Calendar';
-import { CollectCelestialData } from '../core/NavyDataLoader';
 import type {  ICelestialDay } from '../core/interfaces';
 import { matchCelestialDay } from '../core/helpers';
 import { DateDisplay } from './DateDislay';

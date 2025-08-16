@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import './Calendar.css';
-import type { ICelestialDay } from '../core/interfaces';
 
 interface CalendarProps {
   selectedDate?: Date;
@@ -23,7 +22,7 @@ interface CalendarDay {
   stargazingScore?: number; // Add stargazing score
 }
 
-function defaultScoreResolution(i:Date):number{
+function defaultScoreResolution(_i:Date):number{
   return 0;
 }
 
