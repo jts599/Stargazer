@@ -86,7 +86,7 @@ export function Calendar({
         isToday: isSameDay(date, today),
         isSelected: isSameDay(date, selectedDate),
         isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: isDateDisabled(date, minDate, maxDate),
+        isDisabled: false,
         stargazingScore: dateColorCodeFormatingFunction(date)
       });
     }
@@ -100,7 +100,7 @@ export function Calendar({
         isToday: isSameDay(date, today),
         isSelected: isSameDay(date, selectedDate),
         isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: isDateDisabled(date, minDate, maxDate),
+        isDisabled: false,
         stargazingScore: dateColorCodeFormatingFunction(date)
       });
     }
@@ -117,7 +117,7 @@ export function Calendar({
         isToday: isSameDay(date, today),
         isSelected: isSameDay(date, selectedDate),
         isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: isDateDisabled(date, minDate, maxDate),
+        isDisabled: false,
         stargazingScore: dateColorCodeFormatingFunction(date)
       });
     }

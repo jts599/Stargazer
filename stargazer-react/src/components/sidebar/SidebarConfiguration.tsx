@@ -1,0 +1,51 @@
+import React from 'react';
+
+interface SidebarConfigurationProps {
+  latitude: number;
+  longitude: number;
+  timezone: number;
+  onLatitudeChange: (value: number) => void;
+  onLongitudeChange: (value: number) => void;
+  onTimezoneChange: (value: number) => void;
+}
+
+/**
+ * Configuration component for Stargazer location settings
+ * Refactored from StargazerConfiguration
+ */
+export function SidebarConfiguration(props: SidebarConfigurationProps): React.ReactElement {
+  const { latitude, longitude, timezone, onLatitudeChange, onLongitudeChange, onTimezoneChange } = props;
+
+  return (
+    <div className="configuration-container">
+      <form>
+        <label>
+          Latitude:
+          <input
+            type="number"
+            value={latitude}
+            onChange={(e) => onLatitudeChange(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Longitude:
+          <input
+            type="number"
+            value={longitude}
+            onChange={(e) => onLongitudeChange(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Timezone:
+          <input
+            type="number"
+            value={timezone}
+            onChange={(e) => onTimezoneChange(Number(e.target.value))}
+          />
+        </label>
+      </form>
+    </div>
+  );
+}
+
+export default SidebarConfiguration;

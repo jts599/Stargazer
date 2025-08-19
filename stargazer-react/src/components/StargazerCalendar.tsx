@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Calendar } from './Calendar';
+import { Calendar } from './Calendar/Calendar';
 import type {  ICelestialDay } from '../core/interfaces';
 import { matchCelestialDay } from '../core/helpers';
 import { DateDisplay } from './DateDislay';
@@ -8,17 +8,26 @@ import { DateDisplay } from './DateDislay';
 interface IStargazerCalendarProps {
     celestialData: ICelestialDay[];
     year: number;
+    onYearChange?: (newYear: number) => void;
 }
 
 export function StargazerCalendar(props: IStargazerCalendarProps): React.ReactElement {
     
-    const { celestialData, year } = props;
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const { celestialData, year, onYearChange } = props;
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date(year, new Date().getMonth(), new Date().getDate()));
     const [currentCelestialDay, setCurrentCelestialDay] = useState<ICelestialDay | undefined>(matchCelestialDay(new Date(), celestialData));
 
     const handleDateSelect = (date: Date): void => {
+
+        // Check if year has changed and notify parent component
+        const newYear = date.getFullYear();
+
         setSelectedDate(date);
-        console.log('Selected date:', date.toLocaleDateString());
+
+        if (newYear !== year && onYearChange) {
+            onYearChange(newYear);
+        }
+
         const day = matchCelestialDay(date, celestialData);
         setCurrentCelestialDay(day);
     };
@@ -31,7 +40,6 @@ export function StargazerCalendar(props: IStargazerCalendarProps): React.ReactEl
     return (
         <>
             <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
-                <h1>Stargazer Calendar</h1>
                 
                 <Calendar
                     selectedDate={selectedDate}

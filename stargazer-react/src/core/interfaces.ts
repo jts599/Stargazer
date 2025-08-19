@@ -34,6 +34,7 @@ export interface ICelestialDay {
     
 };
 
+
 export interface IMoonFunctionDefinition {
     MoonPeriod?: number;
     MoonWidth?: number; //Moonset - Moonrise
