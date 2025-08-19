@@ -1,0 +1,41 @@
+/* Moon component styles */
+.moon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.moon-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.moon-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* SemiCircle component styles */
+.semicircle {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.semicircle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.semicircle-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .moon-label,
+  .semicircle-label {
+    color: #bbb;
+  }
+}

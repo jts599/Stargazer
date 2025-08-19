@@ -50,12 +50,6 @@ export function Calendar({
            date1.getDate() === date2.getDate();
   };
 
-  const isDateDisabled = (date: Date, min?: Date, max?: Date): boolean => {
-    if (min && date < min) return true;
-    if (max && date > max) return true;
-    return false;
-  };
-
   const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
