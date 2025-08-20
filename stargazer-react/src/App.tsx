@@ -4,14 +4,14 @@ import { StargazerCalendar } from './components/StargazerCalendar'
 import { CollectCelestialData } from './core/NavyDataLoader'
 import { CelestialBody, type ICelestialDay } from './core/interfaces'
 import { Sidebar } from './components/sidebar/Sidebar'
-import { MoonDemo } from './components/Moon/MoonDemo'
-import { SemiCircleDemo } from './components/Moon/SemiCircleDemo'
+// The following imports are commented out but the code is still available if needed
+// import { MoonDemo } from './components/Moon/MoonDemo'
+// import { SemiCircleDemo } from './components/Moon/SemiCircleDemo'
 
 function App() {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number>(currentYear);
   const [celestialData, setCelestialData] = useState<ICelestialDay[] | null>(null);
-  const [activeTab, setActiveTab] = useState<'calendar' | 'moon' | 'semicircle'>('calendar');
   
   useEffect(() => {
       async function fetchData() {
@@ -38,42 +38,15 @@ function App() {
           />
           
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px' }}>
-            <div className="tab-navigation">
-              <button 
-                className={activeTab === 'calendar' ? 'tab-active' : 'tab-inactive'}
-                onClick={() => setActiveTab('calendar')}
-              >
-                Calendar
-              </button>
-              <button 
-                className={activeTab === 'moon' ? 'tab-active' : 'tab-inactive'}
-                onClick={() => setActiveTab('moon')}
-              >
-                Moon Visualization
-              </button>
-              <button 
-                className={activeTab === 'semicircle' ? 'tab-active' : 'tab-inactive'}
-                onClick={() => setActiveTab('semicircle')}
-              >
-                SemiCircle Demo
-              </button>
-            </div>
-            
-            <div className="tab-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-              {activeTab === 'calendar' ? (
-                <StargazerCalendar 
-                  year={year} 
-                  celestialData={celestialData}
-                  onYearChange={(newYear) => {
-                    setYear(newYear);
-                    CollectCelestialData(newYear, 43.09, -89.39, CelestialBody.NauticalTwilight, -6).then(setCelestialData);
-                  }}
-                />
-              ) : activeTab === 'moon' ? (
-                <MoonDemo initialIllumination={celestialData[0]?.illuminationPercentage || 50} />
-              ) : (
-                <SemiCircleDemo />
-              )}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+              <StargazerCalendar 
+                year={year} 
+                celestialData={celestialData}
+                onYearChange={(newYear) => {
+                  setYear(newYear);
+                  CollectCelestialData(newYear, 43.09, -89.39, CelestialBody.NauticalTwilight, -6).then(setCelestialData);
+                }}
+              />
             </div>
           </div>
         </div>
