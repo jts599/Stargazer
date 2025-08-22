@@ -99,10 +99,13 @@ export function Calendar({
       });
     }
     
-    // Add days from next month to complete the grid (6 weeks × 7 days = 42 days)
+    // Calculate minimum weeks needed (5 or 6)
     const totalDaysShown = days.length;
-    const remainingDays = 42 - totalDaysShown;
+    const weeksNeeded = Math.ceil(totalDaysShown / 7);
+    const maxDaysToShow = weeksNeeded * 7;
+    const remainingDays = maxDaysToShow - totalDaysShown;
     
+    // Only add days from next month if we need them to complete the grid
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(year, month + 1, day);
       days.push({
@@ -142,6 +145,13 @@ export function Calendar({
     }
   };
 
+  // Check if selected date is today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateCopy = new Date(selectedDate);
+  selectedDateCopy.setHours(0, 0, 0, 0);
+  const isSelectedDateToday = isSameDay(selectedDateCopy, today);
+
   return (
     <div className={`calendar ${className}`}>
       <div className="calendar-header">
@@ -154,7 +164,15 @@ export function Calendar({
         </button>
         
         <div className="calendar-month-year">
+          <div className="calendar-today-container">
+            {!isSelectedDateToday && (
+              <button className="calendar-today-button" onClick={handleToday} aria-label="Go to today">
+                T
+              </button>
+            )}
+          </div>
           <h2>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h2>
+          <div className="calendar-month-spacer"></div>
         </div>
         
         <button 
@@ -163,12 +181,6 @@ export function Calendar({
           aria-label="Next month"
         >
           &#8250;
-        </button>
-      </div>
-
-      <div className="calendar-controls">
-        <button className="calendar-today-button" onClick={handleToday}>
-          Today
         </button>
       </div>
 
