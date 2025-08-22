@@ -48,14 +48,18 @@ export async function CollectCelestialData(year: number, latitude:number, longit
 }
 
 function __normalizeStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
-    const maxScore = Math.max(...days.map(day => day.stargazingScore ?? 0));
-    if (maxScore === 0) return days; // Avoid division by zero
+    const nonZeroScores = days.filter(day => day.stargazingScore !== undefined && day.stargazingScore > 0);
+    if (nonZeroScores.length === 0) return days; // No valid scores to normalize
     for (const day of days) {
-        if (day.stargazingScore === undefined) {
-            continue;
+        if (day.stargazingScore !== undefined && day.stargazingScore > 0) {
+            //This is not efficient but it is fast enough for now
+            const rank = nonZeroScores.filter(d => (d.stargazingScore ?? 0) < (day.stargazingScore ?? 0)).length;
+            const percentile = (rank / nonZeroScores.length) * 100;
+            day.percentileScore = 100 - percentile;
+        } else {
+            day.percentileScore = 100;
         }
-        day.stargazingScore = (day.stargazingScore / maxScore) * 100; // Normalize to percentage
-        day.stargazingScore = 100 - day.stargazingScore; //lower is better    
+        day.percentileScore = Math.round(day.percentileScore);
     }
     return days;
 }

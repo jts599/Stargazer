@@ -24,9 +24,9 @@ export function Sidebar(props: SidebarProps): React.ReactElement {
       <h2>Stargazer</h2>
       <div className="__sidebarScrollArea">
         <SidebarConfiguration 
-          latitude={latitude}
-          longitude={longitude}
-          timezone={timezone}
+          latitude={localLatitude}
+          longitude={localLongitude}
+          timezone={localTimezone}
           onLatitudeChange={setLocalLatitude}
           onLongitudeChange={setLocalLongitude}
           onTimezoneChange={setLocalTimezone}

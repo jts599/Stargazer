@@ -31,6 +31,7 @@ export interface ICelestialDay {
     illuminationPercentage?: number;
     moonFunctionConstants?: IMoonFunctionDefinition;
     stargazingScore?: number; // Score for the day based on celestial events
+    percentileScore?: number; // Percentile score compared to other days
     
 };
 

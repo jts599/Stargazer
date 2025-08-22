@@ -15,7 +15,7 @@ export function DateInfoDisplayChip({ celestialDay, isWaxing }: DateDisplayProps
     const debug = false;
     const illumination = 100 * (celestialDay.illuminationPercentage ?? 0);
 
-    const illumination255 = (celestialDay.stargazingScore ?? 0) * 255 / 100;
+    const illumination255 = (celestialDay.percentileScore ?? 0) * 255 / 100;
     const illuminationRed = Math.max((255-illumination255), 34);
     const illuminationGreen = Math.max(illumination255, 34);
 
@@ -78,7 +78,7 @@ export function DateInfoDisplayChip({ celestialDay, isWaxing }: DateDisplayProps
                 <div className="date-info-score" style={{ backgroundColor: backgroundColor, border: `1px solid ${borderColor}` }}>
                         <div className="date-info-label" >Stargazing Score</div>
                         <div className="date-info-score-value" style={{ color: color }}>
-                            {celestialDay.stargazingScore?.toFixed(1)}
+                            {celestialDay?.percentileScore}
                         </div>
                     </div>
                 </div>

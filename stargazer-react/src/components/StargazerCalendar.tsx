@@ -35,7 +35,7 @@ export function StargazerCalendar(props: IStargazerCalendarProps): React.ReactEl
 
     const getScoreForDate = useCallback((date: Date): number => {
         const day = matchCelestialDay(date, celestialData);
-        return day?.stargazingScore ?? 0;
+        return day?.percentileScore ?? 0;
     }, [celestialData]);
 
     return (
