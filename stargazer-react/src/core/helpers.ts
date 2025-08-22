@@ -39,7 +39,20 @@ export function formatMinutesSinceNoon(minutes: number | undefined): string {
     // Format the output
     // If minutes < 0, it's before noon (AM)
     // If minutes >= 0, it's after noon (PM)
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    let hour = "";
+    let minute = "";
+    let am_pm = "AM"
+
+    if (minutes < 0) {
+        am_pm = "AM";
+    } else {
+        am_pm = "PM";
+    }
+
+    hour = (hours % 12).toString().padStart(2, '0');
+    minute = mins.toString().padStart(2, '0');
+
+    return `${hour}:${minute} ${am_pm}`;
 }
 /**
  * Converts javaScript month index (0-11) to the Navy's month abbreviation.
