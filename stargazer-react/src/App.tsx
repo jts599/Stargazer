@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { StargazerCalendar } from './components/StargazerCalendar'
+import { MainPane } from './components/MainPane'
 import { CollectCelestialData } from './core/NavyDataLoader'
 import { CelestialBody, type ICelestialDay } from './core/interfaces'
 import { Sidebar } from './components/sidebar/Sidebar'
@@ -37,18 +37,14 @@ function App() {
             }}
           />
           
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-              <StargazerCalendar 
-                year={year} 
-                celestialData={celestialData}
-                onYearChange={(newYear) => {
-                  setYear(newYear);
-                  CollectCelestialData(newYear, 43.09, -89.39, CelestialBody.NauticalTwilight, -6).then(setCelestialData);
-                }}
-              />
-            </div>
-          </div>
+          <MainPane 
+            year={year} 
+            celestialData={celestialData}
+            onYearChange={(newYear: number) => {
+              setYear(newYear);
+              CollectCelestialData(newYear, 43.09, -89.39, CelestialBody.NauticalTwilight, -6).then(setCelestialData);
+            }}
+          />
         </div>
       </div>
     );

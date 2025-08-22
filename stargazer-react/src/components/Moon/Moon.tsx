@@ -61,19 +61,19 @@ export const Moon: React.FC<IMoonProps> = ({
     normalizedIllumination = -normalizedIllumination;
   }
 
-  const elipseColor = illumination < 50 ? darkColor : lightColor;
+  let elipseColor = illumination < 50 ? darkColor : lightColor;
   let hideEllipse = illumination === 50;
 
   if (illumination === 100) {
     leftColor = lightColor;
     rightColor = lightColor;
-    hideEllipse = true;
+    elipseColor = lightColor;
   }
 
   if (illumination === 0) {
     leftColor = darkColor;
     rightColor = darkColor;
-    hideEllipse = true;
+    elipseColor = darkColor;
   }
   
   return (
