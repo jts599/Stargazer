@@ -22,7 +22,7 @@ export interface ICelectialDefinition {
 };
 
 /**
- * ICelestialDay represents the celestial definitions for a specific day,
+ * ICelestialDay represents the celestial conditions for a specific day,
  */
 export interface ICelestialDay {
     date: Date;
@@ -35,6 +35,11 @@ export interface ICelestialDay {
     
 };
 
+export interface IMoonPeriod {
+    moonRise:number;
+    moonFunctionConstants: IMoonFunctionDefinition;
+}
+
 
 export interface IMoonFunctionDefinition {
     MoonPeriod?: number;
@@ -42,4 +47,19 @@ export interface IMoonFunctionDefinition {
     hConstant?: number; //Moonrise - Noon
     phaseShift?: number;
 }
+
+export interface IIlluminationDate {
+    year: number;
+    month: number;
+    day: number;
+    illuminationPercentage: number;
+    waxingOrWaning: WaxingOrWaning;
+}
+
+export type WaxingOrWaning = "Waxing" | "Waning" | "Unknown";
+export const WaxingOrWaning = {
+    Waxing: "Waxing" as WaxingOrWaning,
+    Waning: "Waning" as WaxingOrWaning,
+    Unknown: "Unknown" as WaxingOrWaning,
+};
 

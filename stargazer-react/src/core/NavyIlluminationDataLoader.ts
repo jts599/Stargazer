@@ -1,13 +1,6 @@
-import type { ICelestialDay } from "./interfaces";
+import { WaxingOrWaning, type ICelestialDay, type IIlluminationDate } from "./interfaces";
 import axios from "axios";
 import * as cheerio from "cheerio";
-
-interface IIlluminationDate {
-    month: number;
-    day: number;
-    illuminationPercentage: number;
-}
-
 
 export async function addIlluminationDataToCelestialDays(year: number, days: ICelestialDay[], timeShift: number): Promise<void> {
     const illuminationData = await __loadIlluminationDataRaw(year, timeShift);
@@ -40,7 +33,7 @@ async function __loadIlluminationDataRaw(year:number, timeShift: number) : Promi
     rows.eq(1).find('td').each((i, el) => {
         if (i > 0) months.push($(el).text().replace('.', '').trim());
     });
-
+    
     const results: IIlluminationDate[] = [];
     // Iterate over each data row
     rows.slice(2).each((_, row) => {
@@ -52,13 +45,39 @@ async function __loadIlluminationDataRaw(year:number, timeShift: number) : Promi
             const value = $(cells[i]).text().trim();
             if (value === '--') continue; // Skip empty cells
             results.push({
+                year: year,
                 month: (i-1),
                 day,
-                illuminationPercentage: parseFloat(value)
+                illuminationPercentage: parseFloat(value),
+                waxingOrWaning: WaxingOrWaning.Unknown // Placeholder, real value can be set later
             });
         }
     });
 
+    __fillWaxingOrWaning(results);
     return results;
+}
+
+/**
+ * Fills the waxing or waning phase for each illumination date.
+ * @param illuminationData The illumination data to process.
+ */
+function __fillWaxingOrWaning(illuminationData: IIlluminationDate[]): void {
+    let lastWaxingWaning = WaxingOrWaning.Unknown;
+    for (let i = 0; i < illuminationData.length; i++) {
+        const thisDay = illuminationData[i].illuminationPercentage;
+        const nextDay = (() => {
+            let ii = i + 1;
+            while (ii < illuminationData.length && illuminationData[ii].illuminationPercentage === thisDay) { ii++; }
+            if (ii >= illuminationData.length) return undefined;
+            return illuminationData[ii].illuminationPercentage;
+        })();
+        if (nextDay == undefined) {
+            illuminationData[i].waxingOrWaning = lastWaxingWaning;
+        } else {
+            lastWaxingWaning = nextDay > thisDay ? WaxingOrWaning.Waxing : WaxingOrWaning.Waning;
+            illuminationData[i].waxingOrWaning = lastWaxingWaning;
+        }
+    }
 }
 

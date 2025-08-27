@@ -51,13 +51,24 @@ function __calculateMoonPeriod(moon: ICelectialDefinition, nextDayMoon: ICelecti
  * @param constants - The constants for the moon's movement.
  * @returns The sine value representing the moon's height at the given time.
  */
-const getValueAtTime = (time: number, constants: IMoonFunctionDefinition): number => {
+const __getValueAtTime = (time: number, constants: IMoonFunctionDefinition): number => {
     if (!constants.MoonPeriod || !constants.hConstant || !constants.phaseShift) {
         return 0; // Not enough data to calculate
     }
     const insideSin = (Math.PI * time) / (0.5 * constants.MoonPeriod) + constants.phaseShift;
     return Math.sin(insideSin) + constants.hConstant;
 };
+
+/**
+ * Calculates the value of the moon's height in the sky at a specific time.
+ * @param date - The date object representing the time.
+ * @param constants - The constants for the moon's movement that apply for the given time.
+ * @returns The sine value representing the moon's height at the given time.
+ */
+export const getValueAtTime = (date: Date, constants: IMoonFunctionDefinition): number => {
+    const time = date.getTime()
+    return __getValueAtTime(time, constants);
+}
 
 /**
  * Integrates the moon's movement over a specified time range.
@@ -76,7 +87,7 @@ function integrate(start: number, end: number, constants: IMoonFunctionDefinitio
     }
 
     for (let t = start; t <= end; t += step) {
-        const value = getValueAtTime(t, constants);
+        const value = __getValueAtTime(t, constants);
         if (value < 0) {
             continue; // Skip negative values
         }
