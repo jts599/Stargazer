@@ -109,3 +109,24 @@ export function isNullOrEmpty(value: any): value is Exclude<any, (null | undefin
     }
     return false;
 }
+
+/**
+ * Calculates the difference in minutes between two dates.
+ * @param D1 The first date.
+ * @param D2 The second date.
+ * @returns The difference in minutes between the two dates.
+ */
+export function diffDate(D1: Date, D2: Date): number {
+    const d1Mins = dateInMinutes(D1);
+    const d2Mins = dateInMinutes(D2);
+    return d1Mins - d2Mins;
+}
+
+/**
+ * Converts a Date object to the number of minutes since epoch.
+ * @param date The Date object to convert.
+ * @returns The number of minutes since epoch.
+ */
+export function dateInMinutes(date: Date): number {
+    return Math.floor(date.getTime() / 60000);
+}

@@ -33,10 +33,27 @@ export async function LoadNavyDataRaw(body: CelestialBody, year: number, latitud
 
 export async function CollectCelestialData(year: number, latitude:number, longitude:number, sunOption: CelestialBody = CelestialBody.AstronomicalTwilight, timezone = -6 ) : Promise<ICelestialDay[]> {
 
-    const sunData = parseNavyTable(await LoadNavyDataRaw(sunOption, year, latitude, longitude, timezone));
-    const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude,timezone));
-    let days: ICelestialDay[] = __setupCelestialEvents(year);
+    const civilTwilightData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.CivilTwilight, year, latitude, longitude, timezone), year);
+    const nauticalTwilightData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.NauticalTwilight, year, latitude, longitude, timezone), year);
+    const astroTwilightData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.AstronomicalTwilight, year, latitude, longitude, timezone), year);
+    const sunsetData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Sun, year, latitude, longitude, timezone), year);
 
+    const sunData = (() => {
+        switch (sunOption) {
+            case CelestialBody.CivilTwilight:
+                return civilTwilightData;
+            case CelestialBody.NauticalTwilight:
+                return nauticalTwilightData;
+            case CelestialBody.AstronomicalTwilight:
+                return astroTwilightData;
+            default:
+                return sunsetData;
+        }
+    })();
+
+    const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude,timezone),year);
+    let days: ICelestialDay[] = __setupCelestialEvents(year);
+    
     for (const day of days) {
         __fillCelestialEvents(day, sunData, moonData);
     }
@@ -195,13 +212,15 @@ function getEventForDate(events: INavyCelestialEvent[], date: Date): INavyCelest
 }
 
 export interface INavyCelestialEvent {
+    year: number;
     day: number;
-    month: string;
-    rise: string | null;
-    set: string | null;
+    month: number;
+    hours: number;
+    minutes: number;
+    event: "Rise" | "Set";
 }
 
-export function parseNavyTable(raw: string): INavyCelestialEvent[] {
+export function parseNavyTable(raw: string, year:number): INavyCelestialEvent[] {
     const lines = raw.split('\n').map(l => l.trimEnd());
     // Find the header line with months
     const monthHeaderIdx = lines.findIndex(line => line.match(/Jan\./));
@@ -219,19 +238,43 @@ export function parseNavyTable(raw: string): INavyCelestialEvent[] {
             const setStart = riseStart + 5
             const rise = rest.slice(riseStart, riseStart+4).trim() || null;
             const set = rest.slice(setStart, setStart+4).trim() || null;
-           
-            if (rise === null || rise === "" && set === null || set === "") {
-                continue; // Skip if both rise and set are empty
+
+            if (rise !== null && rise !== "") {
+                const [riseHours, riseMinutes] = __stringTimeToHoursAndMinutes(rise);
+                events.push({
+                    year,
+                    day,
+                    month: m,
+                    hours: riseHours,
+                    minutes: riseMinutes,
+                    event: "Rise"
+                });
             }
 
-            events.push({
-                day,
-                month: months[m],
-                rise: rise?.length ? rise : null,
-                set: set?.length ? set : null,
-            });
+            if (set !== null && set !== "") {
+                const [setHours, setMinutes] = __stringTimeToHoursAndMinutes(set);
+                events.push({
+                    year,
+                    day,
+                    month: months[m],
+                    hours: setHours,
+                    minutes: setMinutes,
+                    event: "Set"
+                });
+            }
         }
     }
     return events;
+}
+
+
+/**
+ * Converts string time to hours and minutes
+ * @param time in format HHMM
+ */
+function __stringTimeToHoursAndMinutes(time: string): [number,number] {
+    const hours = parseInt(time.slice(0, 2), 10);
+    const minutes = parseInt(time.slice(2, 4), 10);
+    return [hours, minutes];
 }
 
