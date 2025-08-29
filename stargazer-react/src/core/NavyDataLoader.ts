@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CelestialBody, type ICelestialDay, type MinutesSinceNoon } from '../core/interfaces';
-import { minutesSinceNoon, monthToNavyAbreviation } from './helpers';
+import { minutesSinceNoon } from './helpers';
 import { addIlluminationDataToCelestialDays } from './NavyIlluminationDataLoader';
 import {scoreDay} from './ScoreCalculation';
 
@@ -31,12 +31,17 @@ export async function LoadNavyDataRaw(body: CelestialBody, year: number, latitud
 
 }
 
+
+
 export async function CollectCelestialData(year: number, latitude:number, longitude:number, sunOption: CelestialBody = CelestialBody.AstronomicalTwilight, timezone = -6 ) : Promise<ICelestialDay[]> {
 
-    const civilTwilightData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.CivilTwilight, year, latitude, longitude, timezone), year);
-    const nauticalTwilightData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.NauticalTwilight, year, latitude, longitude, timezone), year);
-    const astroTwilightData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.AstronomicalTwilight, year, latitude, longitude, timezone), year);
-    const sunsetData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Sun, year, latitude, longitude, timezone), year);
+    const [civilTwilightData,nauticalTwilightData,astroTwilightData,sunsetData, moonData] = await Promise.all([
+        parseNavyTableWithPromise(LoadNavyDataRaw(CelestialBody.CivilTwilight, year, latitude, longitude, timezone), year),
+        parseNavyTableWithPromise(LoadNavyDataRaw(CelestialBody.NauticalTwilight, year, latitude, longitude, timezone), year),
+        parseNavyTableWithPromise(LoadNavyDataRaw(CelestialBody.AstronomicalTwilight, year, latitude, longitude, timezone), year),
+        parseNavyTableWithPromise(LoadNavyDataRaw(CelestialBody.Sun, year, latitude, longitude, timezone), year),
+        parseNavyTableWithPromise(LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude, timezone), year)
+    ]);
 
     const sunData = (() => {
         switch (sunOption) {
@@ -51,7 +56,6 @@ export async function CollectCelestialData(year: number, latitude:number, longit
         }
     })();
 
-    const moonData = parseNavyTable(await LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude,timezone),year);
     let days: ICelestialDay[] = __setupCelestialEvents(year);
     
     for (const day of days) {
@@ -218,6 +222,11 @@ export interface INavyCelestialEvent {
     hours: number;
     minutes: number;
     event: "Rise" | "Set";
+}
+
+async function parseNavyTableWithPromise(rawPromise: Promise<string>, year:number): Promise<INavyCelestialEvent[]> {
+    const raw = await rawPromise;
+    return parseNavyTable(raw, year);
 }
 
 export function parseNavyTable(raw: string, year:number): INavyCelestialEvent[] {
