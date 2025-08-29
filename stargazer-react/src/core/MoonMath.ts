@@ -6,7 +6,7 @@ import type { INavyCelestialEvent } from './NavyDataLoader';
 import { dateInMinutes, diffDate } from './helpers';
 
 
-interface IMoonMath {
+export interface IMoonMath {
     //Date is the MoonRise time
     height: BTree<Date, IMoonFunctionDefinition>;
 
@@ -97,7 +97,7 @@ export function BuildMoonMath(moonData: INavyCelestialEvent[], illuminationData:
 
     illuminationData.forEach(illuminationEvent => {
         const eventDate = new Date(illuminationEvent.year, illuminationEvent.month - 1, illuminationEvent.day);
-        illumination.set(eventDate, illuminationEvent.illuminationPercentage);
+        illumination.set(eventDate, illuminationEvent.moonProps.illuminationPercentage);
     });
 
     return { height, illumination };

@@ -48,12 +48,29 @@ export interface IMoonFunctionDefinition {
     phaseShift?: number;
 }
 
+export interface IMoonDateProps {
+    illuminationPercentage: number;
+    waxingOrWaning: WaxingOrWaning;
+}
+
+export interface ISunDateProps {
+    civilTwilight: IRiseSet;
+    sunriseSunset: IRiseSet;
+    nauticalTwilight: IRiseSet;
+    astronomicalTwilight: IRiseSet;
+}
+
+export interface IRiseSet {
+    rise: Date;
+    set: Date;
+}
+
 export interface IIlluminationDate {
     year: number;
     month: number;
     day: number;
-    illuminationPercentage: number;
-    waxingOrWaning: WaxingOrWaning;
+    moonProps: IMoonDateProps;
+    sunProps?: ISunDateProps
 }
 
 export type WaxingOrWaning = "Waxing" | "Waning" | "Unknown";

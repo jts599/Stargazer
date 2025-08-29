@@ -205,7 +205,7 @@ function __tryGetMinutesSinceNoon(time: string | null): MinutesSinceNoon | undef
 }
 
 function getEventForDate(events: INavyCelestialEvent[], date: Date): INavyCelestialEvent | null  {
-    const month = monthToNavyAbreviation(date.getMonth());
+    const month = date.getMonth();
     if (!month) return null; // Invalid month
     const day = date.getDate();
     return events.find(e => e.month === month && e.day === day) || null;
@@ -256,7 +256,7 @@ export function parseNavyTable(raw: string, year:number): INavyCelestialEvent[] 
                 events.push({
                     year,
                     day,
-                    month: months[m],
+                    month: m,
                     hours: setHours,
                     minutes: setMinutes,
                     event: "Set"
