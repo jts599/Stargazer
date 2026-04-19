@@ -10,12 +10,23 @@ interface IMainPaneProps {
     onYearChange?: (newYear: number) => void;
 }
 
+/**
+ * Displays the primary calendar and selected-day details.
+ * @param props Celestial data, active year, and optional year-change callback.
+ * @returns Main content pane for the Stargazer app.
+ * @sideEffects Updates local selected-date state and calls onYearChange when year selection changes.
+ */
 export function MainPane({ celestialData, year, onYearChange }: IMainPaneProps): React.ReactElement {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date(year, new Date().getMonth(), new Date().getDate()));
     const [currentCelestialDay, setCurrentCelestialDay] = useState<ICelestialDay | undefined>(matchCelestialDay(new Date(), celestialData));
 
+    /**
+     * Updates selected date state and selected celestial-day details.
+     * @param date Date selected in the child calendar.
+     * @returns Nothing.
+     * @sideEffects Mutates local React state and may call onYearChange.
+     */
     const handleDateSelect = (date: Date): void => {
-        // Check if year has changed and notify parent component
         const newYear = date.getFullYear();
 
         setSelectedDate(date);
@@ -36,7 +47,6 @@ export function MainPane({ celestialData, year, onYearChange }: IMainPaneProps):
             padding: '20px',
             height: '100%'
         }}>
-            {/* StargazerCalendar and DateInfoDisplayChip side by side */}
             <div style={{ 
                 display: 'flex', 
                 justifyContent: 'center', 

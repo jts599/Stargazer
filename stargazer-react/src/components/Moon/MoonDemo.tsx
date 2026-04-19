@@ -7,7 +7,10 @@ interface MoonDemoProps {
 }
 
 /**
- * Demo component to showcase the Moon component with various illumination percentages
+ * Provides manual controls for exercising the Moon component.
+ * @param props Optional initial illumination percentage.
+ * @returns Interactive moon phase demo.
+ * @sideEffects Mutates local React state as controls change.
  */
 export const MoonDemo: React.FC<MoonDemoProps> = ({ initialIllumination = 50 }) => {
   const [illumination, setIllumination] = useState(initialIllumination);

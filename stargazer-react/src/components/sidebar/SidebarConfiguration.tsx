@@ -10,8 +10,10 @@ interface SidebarConfigurationProps {
 }
 
 /**
- * Configuration component for Stargazer location settings
- * Refactored from StargazerConfiguration
+ * Renders controlled numeric inputs for Stargazer location settings.
+ * @param props Current latitude, longitude, timezone, and change callbacks.
+ * @returns Location configuration form.
+ * @sideEffects Calls change callbacks as users edit input values.
  */
 export function SidebarConfiguration(props: SidebarConfigurationProps): React.ReactElement {
   const { latitude, longitude, timezone, onLatitudeChange, onLongitudeChange, onTimezoneChange } = props;

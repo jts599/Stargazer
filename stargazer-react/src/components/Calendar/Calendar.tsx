@@ -8,7 +8,7 @@ interface CalendarProps {
   maxDate?: Date;
   highlightedDates?: Date[];
   className?: string;
-  //0-100, 0 is white, 100 is black
+  /** Resolves a 0-100 score where 0 is white and 100 is black. */
   dateColorCodeFormatingFunction?: (date: Date) => number;
 }
 
@@ -19,11 +19,90 @@ interface CalendarDay {
   isSelected: boolean;
   isHighlighted: boolean;
   isDisabled: boolean;
-  stargazingScore?: number; // Add stargazing score
+  stargazingScore?: number;
 }
 
-function defaultScoreResolution(_i:Date):number{
+/**
+ * Provides a neutral score when no date scoring callback is supplied.
+ * @returns Zero, which renders the lightest calendar text color.
+ * @sideEffects None.
+ */
+function defaultScoreResolution(): number {
   return 0;
+}
+
+/**
+ * Compares Date objects by local calendar day.
+ * @param date1 First date to compare.
+ * @param date2 Second date to compare.
+ * @returns True when both dates share year, month, and day.
+ * @sideEffects None.
+ */
+function isSameDay(date1: Date, date2: Date): boolean {
+  return date1.getFullYear() === date2.getFullYear()
+    && date1.getMonth() === date2.getMonth()
+    && date1.getDate() === date2.getDate();
+}
+
+/**
+ * Determines whether a date is outside the optional selectable bounds.
+ * @param date Date to evaluate.
+ * @param minDate Earliest selectable local date, when provided.
+ * @param maxDate Latest selectable local date, when provided.
+ * @returns True when date is before minDate or after maxDate.
+ * @sideEffects None.
+ */
+function isDateDisabled(date: Date, minDate?: Date, maxDate?: Date): boolean {
+  return (minDate !== undefined && date < minDate) || (maxDate !== undefined && date > maxDate);
+}
+
+/**
+ * Builds the view model for a single calendar cell.
+ * @param date Date represented by the cell.
+ * @param currentMonthIndex Current visible month index.
+ * @param selectedDate Currently selected date.
+ * @param highlightedDates Dates to render as highlighted.
+ * @param today Today's local date with time removed.
+ * @param minDate Earliest selectable local date, when provided.
+ * @param maxDate Latest selectable local date, when provided.
+ * @param resolveScore Callback that resolves the stargazing score for the date.
+ * @returns CalendarDay state used by the button renderer.
+ * @sideEffects Calls resolveScore, which may have caller-defined side effects.
+ */
+function createCalendarDay(
+  date: Date,
+  currentMonthIndex: number,
+  selectedDate: Date,
+  highlightedDates: Date[],
+  today: Date,
+  minDate: Date | undefined,
+  maxDate: Date | undefined,
+  resolveScore: (date: Date) => number,
+): CalendarDay {
+  return {
+    date,
+    isCurrentMonth: date.getMonth() === currentMonthIndex,
+    isToday: isSameDay(date, today),
+    isSelected: isSameDay(date, selectedDate),
+    isHighlighted: highlightedDates.some(highlightedDate => isSameDay(highlightedDate, date)),
+    isDisabled: isDateDisabled(date, minDate, maxDate),
+    stargazingScore: resolveScore(date),
+  };
+}
+
+/**
+ * Converts a 0-100 score into a grayscale text color.
+ * @param score Optional percentile-like score.
+ * @returns CSS color string for scored dates, otherwise inherit.
+ * @sideEffects None.
+ */
+function getScoreTextColor(score?: number): string {
+  if (score === undefined) {
+    return 'inherit';
+  }
+
+  const channel = 255 - (score * 2.55);
+  return `rgb(${channel}, ${channel}, ${channel})`;
 }
 
 export function Calendar({
@@ -43,12 +122,6 @@ export function Calendar({
   ];
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  const isSameDay = (date1: Date, date2: Date): boolean => {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
-  };
 
   const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
@@ -74,29 +147,13 @@ export function Calendar({
     // Add days from previous month
     for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
       const date = new Date(year, month - 1, daysInPrevMonth - i);
-      days.push({
-        date,
-        isCurrentMonth: false,
-        isToday: isSameDay(date, today),
-        isSelected: isSameDay(date, selectedDate),
-        isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: false,
-        stargazingScore: dateColorCodeFormatingFunction(date)
-      });
+      days.push(createCalendarDay(date, month, selectedDate, highlightedDates, today, minDate, maxDate, dateColorCodeFormatingFunction));
     }
     
     // Add days from current month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      days.push({
-        date,
-        isCurrentMonth: true,
-        isToday: isSameDay(date, today),
-        isSelected: isSameDay(date, selectedDate),
-        isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: false,
-        stargazingScore: dateColorCodeFormatingFunction(date)
-      });
+      days.push(createCalendarDay(date, month, selectedDate, highlightedDates, today, minDate, maxDate, dateColorCodeFormatingFunction));
     }
     
     // Calculate minimum weeks needed (5 or 6)
@@ -108,19 +165,11 @@ export function Calendar({
     // Only add days from next month if we need them to complete the grid
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(year, month + 1, day);
-      days.push({
-        date,
-        isCurrentMonth: false,
-        isToday: isSameDay(date, today),
-        isSelected: isSameDay(date, selectedDate),
-        isHighlighted: highlightedDates.some(d => isSameDay(d, date)),
-        isDisabled: false,
-        stargazingScore: dateColorCodeFormatingFunction(date)
-      });
+      days.push(createCalendarDay(date, month, selectedDate, highlightedDates, today, minDate, maxDate, dateColorCodeFormatingFunction));
     }
     
     return days;
-  }, [currentMonth, selectedDate, highlightedDates, minDate, maxDate]);
+  }, [currentMonth, selectedDate, highlightedDates, minDate, maxDate, dateColorCodeFormatingFunction]);
 
 
   const handlePrevMonth = (): void => {
@@ -194,9 +243,7 @@ export function Calendar({
 
       <div className="calendar-grid">
         {calendarDays.map((day, index) => {
-          const textColor = day.stargazingScore !== undefined
-            ? `rgb(${255 - (day.stargazingScore * 2.55)}, ${255 - (day.stargazingScore * 2.55)}, ${255 - (day.stargazingScore * 2.55)})`
-            : 'inherit'; // Default to inherit if no score
+          const textColor = getScoreTextColor(day.stargazingScore);
 
           return (
             <button

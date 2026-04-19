@@ -10,7 +10,10 @@ interface SidebarProps {
 }
 
 /**
- * Main sidebar component that contains the configuration and potentially other sidebar elements
+ * Renders location controls and submits the selected configuration.
+ * @param props Initial location values and update callback.
+ * @returns Sidebar containing location inputs and an update button.
+ * @sideEffects Calls onUpdate when the user clicks Update.
  */
 export function Sidebar(props: SidebarProps): React.ReactElement {
   const { latitude, longitude, timezone, onUpdate } = props;

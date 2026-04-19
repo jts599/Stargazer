@@ -1,5 +1,9 @@
 import React from 'react';
 
+const MIN_ILLUMINATION = 0;
+const HALF_ILLUMINATION = 50;
+const MAX_ILLUMINATION = 100;
+
 export interface IMoonProps {
   /**
    * Illumination percentage (0-100)
@@ -26,7 +30,10 @@ export interface IMoonProps {
 }
 
 /**
- * SVG Moon component that displays a moon with a customizable illumination percentage
+ * Displays a moon with a customizable illumination percentage.
+ * @param props Moon phase, sizing, color, and orientation settings.
+ * @returns Layered SVG moon phase graphic.
+ * @sideEffects None.
  */
 export const Moon: React.FC<IMoonProps> = ({
   illuminationPercentage,
@@ -36,41 +43,25 @@ export const Moon: React.FC<IMoonProps> = ({
   className = '',
   isWaxing = true
 }) => {
-  // Ensure illumination is between 0 and 100
-  const illumination = Math.max(0, Math.min(100, illuminationPercentage));
-  let leftColor=lightColor;
-  let rightColor=darkColor;
+  const illumination = Math.max(MIN_ILLUMINATION, Math.min(MAX_ILLUMINATION, illuminationPercentage));
+  let leftColor = lightColor;
+  let rightColor = darkColor;
 
   if (!isWaxing) {
     leftColor = darkColor;
     rightColor = lightColor;
   }
 
-  // Calculate the x position of the shadow ellipse based on illumination percentage
-  // For new moon (0%), the shadow covers the entire moon
-  // For full moon (100%), the shadow is completely off to the side
-  
-  // Normalize illumination to -1 to 1 range where:
-  // -1 = shadow completely covers the moon (new moon)
-  // 0 = shadow covers exactly half the moon (half moon)
-  // 1 = shadow is completely off to the side (full moon)
-  let normalizedIllumination = (illumination / 50) - 1;
-  
-  // Reverse the direction for waning phase
-  if (!isWaxing) {
-    normalizedIllumination = -normalizedIllumination;
-  }
+  let elipseColor = illumination < HALF_ILLUMINATION ? darkColor : lightColor;
+  const hideEllipse = illumination === HALF_ILLUMINATION;
 
-  let elipseColor = illumination < 50 ? darkColor : lightColor;
-  let hideEllipse = illumination === 50;
-
-  if (illumination === 100) {
+  if (illumination === MAX_ILLUMINATION) {
     leftColor = lightColor;
     rightColor = lightColor;
     elipseColor = lightColor;
   }
 
-  if (illumination === 0) {
+  if (illumination === MIN_ILLUMINATION) {
     leftColor = darkColor;
     rightColor = darkColor;
     elipseColor = darkColor;
@@ -111,7 +102,10 @@ export interface ISemiCircleProps {
 }
 
 /**
- * SVG SemiCircle component that displays a semi-circle with customizable orientation
+ * Displays a semi-circle with customizable orientation.
+ * @param props Direction, size, color, and optional CSS class.
+ * @returns SVG semi-circle path.
+ * @sideEffects None.
  */
 export const SemiCircle: React.FC<ISemiCircleProps> = ({
   leftFacing = false,
@@ -119,14 +113,7 @@ export const SemiCircle: React.FC<ISemiCircleProps> = ({
   color,
   className = ''
 }) => {
-  // Calculate the center of the semi-circle
   const center = size / 2;
-  
-  // Create the path for the semi-circle
-  // The semi-circle is drawn using an arc path command
-  // For a semicircle, we need to draw a half circle
-  // If leftFacing is true, the semi-circle opens to the left (faces right)
-  // If leftFacing is false, the semi-circle opens to the right (faces left)
   const direction = leftFacing ? 1 : 0;
   const pathData = `M ${center},0 A ${center},${center} 0 0,${direction} ${center},${size} Z`;
 
@@ -156,9 +143,14 @@ interface IMiddleElipseProps {
   color: string;
 }
 
+/**
+ * Draws the central ellipse that adjusts crescent and gibbous moon phases.
+ * @param props Illumination percentage, pixel size, and fill color.
+ * @returns SVG ellipse layer.
+ * @sideEffects None.
+ */
 export const MiddleElipse: React.FC<IMiddleElipseProps> = ({ percentage, size, color }) => {
-  // Calculate the radius based on the percentage
-  const width = size * Math.abs(percentage - 50) / 100;
+  const width = size * Math.abs(percentage - HALF_ILLUMINATION) / MAX_ILLUMINATION;
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>

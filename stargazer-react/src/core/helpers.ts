@@ -1,100 +1,58 @@
 import type { ICelestialDay } from "./interfaces";
 
-/**
- * This function calculates the total minutes since noon (12:00 PM).
- * @param hour - The hour of the day (0-23).
- * @param minute - The minute of the hour (0-59).
- * @returns how many minutes have passed since noon.
- *          Returns a negative value if the time is before noon.
- */
-export function minutesSinceNoon(hour: number, minute: number): number {
-    // Calculate the total minutes since noon
-    return (hour * 60 + minute) - (12 * 60);
-};
+const NAVY_MONTH_ABBREVIATIONS = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"] as const;
+const HOURS_TO_MS = 60 * 60 * 1000;
 
+/**
+ * Finds celestial data for the same local calendar day as the provided date.
+ * @param date Local date to match.
+ * @param celestialDays Candidate day records.
+ * @returns Matching day record, or undefined when the date is not present.
+ * @sideEffects None.
+ */
 export function matchCelestialDay(date: Date, celestialDays: ICelestialDay[]): ICelestialDay | undefined {
-    // Find the celestial day that matches the given date
     return celestialDays.find(day => day.date.getFullYear() === date.getFullYear() &&
                                      day.date.getMonth() === date.getMonth() &&
                                      day.date.getDate() === date.getDate());
 }
 
 /**
- * Converts minutes since noon to a formatted string.
- * @param minutes - The number of minutes since noon (can be negative for times before noon).
- * @returns ""HH:MM AM/PM"" formatted string representing the time.
+ * Formats a UTC instant using the fixed offset that produced the Navy table.
+ * @param instant UTC instant to display, or undefined when no event exists.
+ * @param timezone Fixed UTC offset in hours.
+ * @returns Local 12-hour clock string, or "No event" for missing/invalid instants.
+ * @sideEffects None.
  */
-export function formatMinutesSinceNoon(minutes: number | undefined): string {
-    
-    if (minutes === undefined || isNaN(minutes)) {
-        return "Invalid time";
+export function formatUtcInstantForTimezone(instant: Date | undefined, timezone: number): string {
+    if (!instant || isNaN(instant.getTime())) {
+        return "No event";
     }
 
-    // Convert minutes since noon to hours and minutes
-    const date = dateFromMinutesSinceNoon(minutes);
-    const hours = date.getHours();
-    const mins = date.getMinutes();
-    
-
-    // Format the output
-    // If minutes < 0, it's before noon (AM)
-    // If minutes >= 0, it's after noon (PM)
-    let hour = "";
-    let minute = "";
-    let am_pm = "AM"
-
-    if (minutes < 0) {
-        am_pm = "AM";
-    } else {
-        am_pm = "PM";
-    }
-
-    hour = (hours % 12).toString().padStart(2, '0');
-    minute = mins.toString().padStart(2, '0');
-
-    return `${hour}:${minute} ${am_pm}`;
+    const localTime = new Date(instant.getTime() + timezone * HOURS_TO_MS);
+    const hours = localTime.getUTCHours();
+    const mins = localTime.getUTCMinutes();
+    const hour12 = hours % 12 || 12;
+    const amPm = hours < 12 ? "AM" : "PM";
+    return `${hour12.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} ${amPm}`;
 }
 /**
  * Converts javaScript month index (0-11) to the Navy's month abbreviation.
- * @param month Month index (0-11)
- * @returns How the navy reports the month as an abbreviation.
+ * @param month Month index from 0 to 11.
+ * @returns Navy month abbreviation, or null when the index is out of range.
+ * @sideEffects None.
  */
 export function monthToNavyAbreviation(month: number): string | null {
-    switch (month) {
-        case 0: return "Jan";
-        case 1: return "Feb";
-        case 2: return "Mar";
-        case 3: return "Apr";
-        case 4: return "May";
-        case 5: return "June";
-        case 6: return "July";
-        case 7: return "Aug";
-        case 8: return "Sept";
-        case 9: return "Oct";
-        case 10: return "Nov";
-        case 11: return "Dec";
-    }
-    return null;
+    return NAVY_MONTH_ABBREVIATIONS[month] ?? null;
 }
 
-
-function dateFromMinutesSinceNoon(minutes: number): Date {
-    // Calculate the date based on minutes since noon
-        minutes = minutes + (12 * 60); // Adjust to get the actual time
-        minutes = minutes % (24 * 60); // Wrap around if it exceeds 24 hours
-    const now = new Date();
-    const hours = Math.floor(minutes / 60);
-    minutes = minutes % 60;
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(),hours, minutes);
-    return date;
-}
 
 /**
  * Checks if a value is null, undefined, an empty string, an empty array, or an empty object.
- * @param value The value to check.
+ * @param value Value to check.
  * @returns True if the value is null, undefined, an empty string, an empty array, or an empty object; otherwise false.
+ * @sideEffects None.
  */
-export function isNullOrEmpty(value: any): value is Exclude<any, (null | undefined)> {
+export function isNullOrEmpty(value: unknown): boolean {
     if (value === null || value === undefined) {
         return true;
     }

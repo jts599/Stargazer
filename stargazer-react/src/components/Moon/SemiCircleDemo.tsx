@@ -3,7 +3,9 @@ import { SemiCircle } from './Moon';
 import './Moon.css';
 
 /**
- * Demo component to showcase the SemiCircle component
+ * Provides manual controls for exercising the SemiCircle component.
+ * @returns Interactive semi-circle demo.
+ * @sideEffects Mutates local React state as controls change.
  */
 export const SemiCircleDemo: React.FC = () => {
   const [size, setSize] = useState(100);

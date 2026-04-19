@@ -9,37 +9,56 @@ export const CelestialBody = {
     AstronomicalTwilight: 4,
 } as const;
 
+/**
+ * Numeric Navy API task identifier for a celestial body or twilight table.
+ */
 export type CelestialBody = typeof CelestialBody[keyof typeof CelestialBody];
 
-export type MinutesSinceNoon = number;
 /**
- * ICelestialDefinition represents the rise and set times of celestial bodies.
- * It includes the hour and minute for both rise and set times.
+ * UTC Date used for celestial rise and set events.
  */
-export interface ICelectialDefinition {
-    rise?: MinutesSinceNoon
-    set?: MinutesSinceNoon
-};
+export type UtcInstant = Date;
 
 /**
- * ICelestialDay represents the celestial definitions for a specific day,
+ * ICelestialDefinition represents the rise and set times of celestial bodies.
+ * Values are optional because the Navy tables omit events on some dates.
+ */
+export interface ICelectialDefinition {
+    rise?: UtcInstant;
+    set?: UtcInstant;
+}
+
+/**
+ * Celestial and scoring data for one local calendar day.
  */
 export interface ICelestialDay {
     date: Date;
+    timezone: number;
     sun?: ICelectialDefinition;
     moon?: ICelectialDefinition;
     illuminationPercentage?: number;
     moonFunctionConstants?: IMoonFunctionDefinition;
-    stargazingScore?: number; // Score for the day based on celestial events
-    percentileScore?: number; // Percentile score compared to other days
-    
-};
-
-
-export interface IMoonFunctionDefinition {
-    MoonPeriod?: number;
-    MoonWidth?: number; //Moonset - Moonrise
-    hConstant?: number; //Moonrise - Noon
-    phaseShift?: number;
+    stargazingScore?: number;
+    percentileScore?: number;
 }
 
+/**
+ * Debug/display metadata for the moon cycle selected during scoring.
+ */
+export interface IMoonFunctionDefinition {
+    cycleStart: UtcInstant;
+    cycleEnd: UtcInstant;
+    periodMinutes: number;
+    visibleDurationMinutes?: number;
+}
+
+/**
+ * Moonrise-to-moonrise cycle used to estimate moon presence in the sky.
+ */
+export interface IMoonCycle {
+    startRise: UtcInstant;
+    endRise: UtcInstant;
+    set?: UtcInstant;
+    periodMs: number;
+    visibleDurationMs?: number;
+}

@@ -20,7 +20,10 @@ interface MoonDisplayProps {
 }
 
 /**
- * Simple wrapper for the Moon component that includes an optional label
+ * Renders a Moon with an optional text label.
+ * @param props Moon display settings and optional label.
+ * @returns Moon wrapper element.
+ * @sideEffects None.
  */
 export const MoonDisplay: React.FC<MoonDisplayProps> = ({
   illuminationPercentage,
