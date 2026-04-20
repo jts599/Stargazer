@@ -19,6 +19,8 @@ const DEFAULT_LOCATION: IStargazerLocation = {
   timezone: DEFAULT_TIMEZONE,
 };
 
+export type ActiveCard = 'day' | 'location' | 'date';
+
 /**
  * Confirms every location field can be used for data loading.
  * @param location Candidate location values.
@@ -99,6 +101,7 @@ function App() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [year, setYear] = useState<number>(currentYear);
   const [celestialData, setCelestialData] = useState<ICelestialDay[] | null>(null);
+  const [activeCard, setActiveCard] = useState<ActiveCard>('day');
 
   /**
    * Loads celestial data and updates both the selected year and displayed data.
@@ -156,10 +159,21 @@ function App() {
     const nextYear = date.getFullYear();
 
     setSelectedDate(date);
+    setActiveCard('day');
 
     if (nextYear !== year) {
       await loadCelestialData(nextYear, location);
     }
+  };
+
+  /**
+   * Selects the single card shown in the main pane.
+   * @param card Card requested from the sidebar rail.
+   * @returns Nothing.
+   * @sideEffects Mutates the active card state.
+   */
+  const handleCardSelect = (card: ActiveCard): void => {
+    setActiveCard((currentCard) => currentCard === card ? 'day' : card);
   };
 
   if (celestialData){
@@ -167,17 +181,17 @@ function App() {
       <div className="App">
         <div className="app-shell">
           <Sidebar
+            activeCard={activeCard}
+            onCardSelect={handleCardSelect}
+          />
+          
+          <MainPane 
+            activeCard={activeCard}
             celestialData={celestialData}
             location={location}
             selectedDate={selectedDate}
             year={year}
             onApplyLocation={handleApplyLocation}
-            onDateSelect={handleDateSelect}
-          />
-          
-          <MainPane 
-            celestialData={celestialData}
-            selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
           />
         </div>

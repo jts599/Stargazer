@@ -36,6 +36,29 @@ html, body {
   padding: 40px 20px;
 }
 
+.main-config-card {
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  color: #f8fafc;
+  flex: 0 1 550px;
+  max-width: 550px;
+  padding: 24px;
+  width: min(550px, 100%);
+}
+
+.main-calendar-card .calendar {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 100%;
+  padding: 0;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

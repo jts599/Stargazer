@@ -22,14 +22,19 @@
 
 .sidebar-brand {
   align-items: center;
-  border: 1px solid #556070;
-  border-radius: 8px;
   display: inline-flex;
-  font-size: 0.95rem;
-  font-weight: 700;
   height: 40px;
   justify-content: center;
   margin-bottom: 10px;
+  overflow: hidden;
+  width: 40px;
+}
+
+.sidebar-brand-icon {
+  border-radius: 8px;
+  display: block;
+  height: 40px;
+  object-fit: cover;
   width: 40px;
 }
 
@@ -48,6 +53,13 @@
   width: 42px;
 }
 
+.sidebar-button-icon {
+  display: block;
+  filter: invert(91%) sepia(9%) saturate(214%) hue-rotate(176deg) brightness(99%) contrast(92%);
+  height: 24px;
+  width: 24px;
+}
+
 .sidebar-icon-button:hover,
 .sidebar-icon-button:focus-visible,
 .sidebar-icon-button.active {
@@ -55,49 +67,6 @@
   border-color: #7da2cf;
   color: #ffffff;
   outline: none;
-}
-
-.sidebar-flyout {
-  left: 60px;
-  max-width: min(420px, calc(100vw - 76px));
-  padding: 14px;
-  position: absolute;
-  top: 0;
-  width: 420px;
-}
-
-.sidebar-flyout.hidden {
-  display: none;
-}
-
-.sidebar-config-card {
-  background-color: #2b3037;
-  border: 1px solid #4b5563;
-  border-radius: 8px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
-  box-sizing: border-box;
-  color: #f5f7fa;
-  padding: 18px;
-}
-
-.sidebar-config-card h2 {
-  color: #f5f7fa;
-  font-size: 1.1rem;
-  line-height: 1.2;
-  margin: 0 0 14px;
-}
-
-.sidebar-calendar-card {
-  width: 100%;
-}
-
-.sidebar-calendar-card .calendar {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  max-width: 100%;
-  padding: 0;
 }
 
 .configuration-container form {
@@ -154,12 +123,4 @@
   border-color: #4b5563;
   color: #a8b0bb;
   cursor: not-allowed;
-}
-
-@media (max-width: 560px) {
-  .sidebar-flyout {
-    max-width: calc(100vw - 60px);
-    padding: 10px;
-    width: calc(100vw - 60px);
-  }
 }
