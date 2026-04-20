@@ -21,6 +21,11 @@ const DEFAULT_LOCATION: IStargazerLocation = {
 
 export type ActiveCard = 'day' | 'location' | 'date';
 
+interface InitialLocationState {
+  location: IStargazerLocation;
+  hasAppliedLocation: boolean;
+}
+
 /**
  * Confirms every location field can be used for data loading.
  * @param location Candidate location values.
@@ -34,14 +39,17 @@ function isValidLocation(location: Partial<IStargazerLocation>): location is ISt
 }
 
 /**
- * Reads the last applied location from session storage.
- * @returns Stored location when present and valid, otherwise the default location.
- * @throws Does not throw; malformed stored values fall back to defaults.
+ * Reads initial location state and records whether it came from user storage.
+ * @returns Initial applied-location state for top-level React ownership.
+ * @throws Does not throw; unavailable or invalid storage falls back to defaults.
  * @sideEffects Reads browser sessionStorage when available.
  */
-function readStoredLocation(): IStargazerLocation {
+function readInitialLocationState(): InitialLocationState {
   if (typeof window === 'undefined') {
-    return DEFAULT_LOCATION;
+    return {
+      location: DEFAULT_LOCATION,
+      hasAppliedLocation: false,
+    };
   }
 
   let storedLocation: string | null;
@@ -49,24 +57,39 @@ function readStoredLocation(): IStargazerLocation {
   try {
     storedLocation = window.sessionStorage.getItem(LOCATION_STORAGE_KEY);
   } catch {
-    return DEFAULT_LOCATION;
+    return {
+      location: DEFAULT_LOCATION,
+      hasAppliedLocation: false,
+    };
   }
 
   if (storedLocation === null) {
-    return DEFAULT_LOCATION;
+    return {
+      location: DEFAULT_LOCATION,
+      hasAppliedLocation: false,
+    };
   }
 
   try {
     const parsedLocation = JSON.parse(storedLocation) as Partial<IStargazerLocation>;
 
     if (isValidLocation(parsedLocation)) {
-      return parsedLocation;
+      return {
+        location: parsedLocation,
+        hasAppliedLocation: true,
+      };
     }
   } catch {
-    return DEFAULT_LOCATION;
+    return {
+      location: DEFAULT_LOCATION,
+      hasAppliedLocation: false,
+    };
   }
 
-  return DEFAULT_LOCATION;
+  return {
+    location: DEFAULT_LOCATION,
+    hasAppliedLocation: false,
+  };
 }
 
 /**
@@ -97,11 +120,12 @@ function storeLocation(location: IStargazerLocation): void {
 function App() {
   const currentYear = new Date().getFullYear();
   const hasLoadedInitialData = useRef(false);
-  const [location, setLocation] = useState<IStargazerLocation>(readStoredLocation);
+  const [locationState, setLocationState] = useState<InitialLocationState>(readInitialLocationState);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [year, setYear] = useState<number>(currentYear);
   const [celestialData, setCelestialData] = useState<ICelestialDay[] | null>(null);
   const [activeCard, setActiveCard] = useState<ActiveCard>('day');
+  const location = locationState.location;
 
   /**
    * Loads celestial data and updates both the selected year and displayed data.
@@ -143,7 +167,10 @@ function App() {
    * @sideEffects Writes sessionStorage and mutates application state.
    */
   const handleApplyLocation = async (nextLocation: IStargazerLocation): Promise<void> => {
-    setLocation(nextLocation);
+    setLocationState({
+      location: nextLocation,
+      hasAppliedLocation: true,
+    });
     storeLocation(nextLocation);
     await loadCelestialData(selectedDate.getFullYear(), nextLocation);
   };
@@ -190,6 +217,7 @@ function App() {
             celestialData={celestialData}
             location={location}
             selectedDate={selectedDate}
+            shouldUseBrowserLocationDefault={!locationState.hasAppliedLocation}
             year={year}
             onApplyLocation={handleApplyLocation}
             onDateSelect={handleDateSelect}

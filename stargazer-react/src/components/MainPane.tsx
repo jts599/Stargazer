@@ -11,6 +11,7 @@ interface IMainPaneProps {
     celestialData: ICelestialDay[];
     location: IStargazerLocation;
     selectedDate: Date;
+    shouldUseBrowserLocationDefault: boolean;
     year: number;
     onApplyLocation: (location: IStargazerLocation) => void;
     onDateSelect: (date: Date) => void;
@@ -28,6 +29,7 @@ export function MainPane(props: IMainPaneProps): React.ReactElement {
         celestialData,
         location,
         selectedDate,
+        shouldUseBrowserLocationDefault,
         year,
         onApplyLocation,
         onDateSelect,
@@ -50,6 +52,7 @@ export function MainPane(props: IMainPaneProps): React.ReactElement {
         currentCelestialDay,
         location,
         selectedDate,
+        shouldUseBrowserLocationDefault,
         year,
         onApplyLocation,
         onDateSelect,
@@ -66,6 +69,7 @@ interface ActiveCardRenderProps {
     currentCelestialDay: ICelestialDay | undefined;
     location: IStargazerLocation;
     selectedDate: Date;
+    shouldUseBrowserLocationDefault: boolean;
     year: number;
     onApplyLocation: (location: IStargazerLocation) => void;
     onDateSelect: (date: Date) => void;
@@ -86,6 +90,7 @@ function renderActiveCard(props: ActiveCardRenderProps): React.ReactElement | nu
         currentCelestialDay,
         location,
         selectedDate,
+        shouldUseBrowserLocationDefault,
         year,
         onApplyLocation,
         onDateSelect,
@@ -99,7 +104,10 @@ function renderActiveCard(props: ActiveCardRenderProps): React.ReactElement | nu
                 <SidebarConfiguration
                     latitude={location.latitude}
                     longitude={location.longitude}
+                    selectedDate={selectedDate}
+                    shouldUseBrowserLocationDefault={shouldUseBrowserLocationDefault}
                     timezone={location.timezone}
+                    timezoneId={location.timezoneId}
                     onApply={onApplyLocation}
                 />
             </section>

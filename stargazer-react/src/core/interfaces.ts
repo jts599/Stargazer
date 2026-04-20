@@ -20,12 +20,13 @@ export type CelestialBody = typeof CelestialBody[keyof typeof CelestialBody];
 export type UtcInstant = Date;
 
 /**
- * User-selected observing location and fixed timezone offset.
+ * User-selected observing location, fixed timezone offset, and optional IANA zone.
  */
 export interface IStargazerLocation {
     latitude: number;
     longitude: number;
     timezone: number;
+    timezoneId?: string;
 }
 
 /**
