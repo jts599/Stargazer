@@ -1,86 +1,165 @@
-/* Sidebar styling */
-.__sidebarContent {
+.sidebar-shell {
   display: flex;
-  flex-direction: column;
-  background-color: #2d2d2d; /* Darker background for better contrast */
-  border-right: 1px solid #4d4d4d;
   height: 100%;
   min-height: 100vh;
-  color: #f0f0f0;
-  min-width: 180px;
-  max-width: 500px;
-  padding: 1rem 0;
+  position: relative;
+  z-index: 2;
+}
+
+.sidebar-rail {
+  align-items: center;
+  background-color: #22252a;
+  border-right: 1px solid #3a3f47;
   box-sizing: border-box;
-}
-
-.__sidebarContent h2 {
-  padding: 0 1rem;
-  margin-bottom: 1rem;
-}
-
-.__sidebarScrollArea {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 1rem;
-}
-
-.__buttonFooter {
-  margin-top: auto;
-  padding: 1rem;
-  border-top: 1px solid #3d3d3d; /* Subtle border that matches the new color scheme */
+  color: #f5f7fa;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 60px;
+  padding: 14px 8px;
+  width: 60px;
+}
+
+.sidebar-brand {
+  align-items: center;
+  border: 1px solid #556070;
+  border-radius: 8px;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 700;
+  height: 40px;
   justify-content: center;
+  margin-bottom: 10px;
+  width: 40px;
 }
 
-/* Form elements styling */
-.__sidebarContent form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0.75rem;
-  padding: 0 0.5rem;
+.sidebar-icon-button {
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #d7dde5;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 700;
+  height: 42px;
+  justify-content: center;
+  padding: 0;
+  width: 42px;
 }
 
-.__sidebarContent label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  width: 100%;
-  margin-bottom: 0;
+.sidebar-icon-button:hover,
+.sidebar-icon-button:focus-visible,
+.sidebar-icon-button.active {
+  background-color: #314154;
+  border-color: #7da2cf;
+  color: #ffffff;
+  outline: none;
 }
 
-.__sidebarContent input {
-  padding: 0.4rem;
-  border-radius: 4px;
-  border: 1px solid #666; /* Lighter border */
-  background-color: #4a4a4a; /* Lighter background for better contrast */
-  color: #ffffff; /* Brighter text for better readability */
-  width: calc(100% - 8px);
+.sidebar-flyout {
+  left: 60px;
+  max-width: min(420px, calc(100vw - 76px));
+  padding: 14px;
+  position: absolute;
+  top: 0;
+  width: 420px;
+}
+
+.sidebar-flyout.hidden {
+  display: none;
+}
+
+.sidebar-config-card {
+  background-color: #2b3037;
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
+  color: #f5f7fa;
+  padding: 18px;
 }
 
-.__sidebarContent button {
-  padding: 0.6rem 1.2rem;
-  background-color: #646cff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  width: 90%;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-weight: 500;
+.sidebar-config-card h2 {
+  color: #f5f7fa;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  margin: 0 0 14px;
+}
+
+.sidebar-calendar-card {
+  width: 100%;
+}
+
+.sidebar-calendar-card .calendar {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 100%;
+  padding: 0;
+}
+
+.configuration-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.configuration-container label {
+  align-items: flex-start;
+  color: #d7dde5;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  gap: 6px;
   margin: 0;
+  width: 100%;
 }
 
-.__sidebarContent button:hover {
-  background-color: #535bf2;
+.configuration-container input {
+  background-color: #171a1f;
+  border: 1px solid #5c6673;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #ffffff;
+  padding: 9px 10px;
+  width: 100%;
 }
 
-.__sidebarContent h3 {
-  margin-bottom: 1rem;
-  color: #e0e0e0;
+.configuration-container input:focus {
+  border-color: #7da2cf;
+  outline: none;
 }
 
-/* Removing dark mode overrides to maintain consistent background color */
+.configuration-container button {
+  background-color: #446a95;
+  border: 1px solid #6d95c2;
+  border-radius: 8px;
+  color: #ffffff;
+  margin-top: 4px;
+  padding: 10px 14px;
+  width: 100%;
+}
+
+.configuration-container button:hover,
+.configuration-container button:focus-visible {
+  background-color: #527dab;
+  outline: none;
+}
+
+.configuration-container button:disabled {
+  background-color: #3d444d;
+  border-color: #4b5563;
+  color: #a8b0bb;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .sidebar-flyout {
+    max-width: calc(100vw - 60px);
+    padding: 10px;
+    width: calc(100vw - 60px);
+  }
+}

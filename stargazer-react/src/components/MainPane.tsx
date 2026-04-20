@@ -1,88 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { StargazerCalendar } from './StargazerCalendar';
+import React from 'react';
 import { DateInfoDisplayChip } from './DateDisplay/DateInfoDisplayChip';
 import type { ICelestialDay } from '../core/interfaces';
 import { matchCelestialDay } from '../core/helpers';
 
 interface IMainPaneProps {
     celestialData: ICelestialDay[];
-    year: number;
-    onYearChange?: (newYear: number) => void;
+    selectedDate: Date;
+    onDateSelect: (date: Date) => void;
 }
 
 /**
- * Displays the primary calendar and selected-day details.
- * @param props Celestial data, active year, and optional year-change callback.
+ * Displays the selected-day details for the active stargazing date.
+ * @param props Celestial data, selected date, and date-selection callback.
  * @returns Main content pane for the Stargazer app.
- * @sideEffects Updates local selected-date state and calls onYearChange when year selection changes.
+ * @sideEffects Calls onDateSelect when day navigation buttons are used.
  */
-export function MainPane({ celestialData, year, onYearChange }: IMainPaneProps): React.ReactElement {
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date(year, new Date().getMonth(), new Date().getDate()));
-    const [currentCelestialDay, setCurrentCelestialDay] = useState<ICelestialDay | undefined>(matchCelestialDay(new Date(), celestialData));
-
-    useEffect(() => {
-        setCurrentCelestialDay(matchCelestialDay(selectedDate, celestialData));
-    }, [celestialData, selectedDate]);
-
-    /**
-     * Updates selected date state and selected celestial-day details.
-     * @param date Date selected in the child calendar.
-     * @returns Nothing.
-     * @sideEffects Mutates local React state and may call onYearChange.
-     */
-    const handleDateSelect = (date: Date): void => {
-        const newYear = date.getFullYear();
-
-        setSelectedDate(date);
-
-        if (newYear !== year && onYearChange) {
-            onYearChange(newYear);
-        }
-
-        const day = matchCelestialDay(date, celestialData);
-        setCurrentCelestialDay(day);
-    };
+export function MainPane({ celestialData, selectedDate, onDateSelect }: IMainPaneProps): React.ReactElement {
+    const currentCelestialDay = matchCelestialDay(selectedDate, celestialData);
 
     /**
      * Selects the day offset from the current detail view.
      * @param dayOffset Number of local calendar days to move.
      * @returns Nothing.
-     * @sideEffects Mutates local selected-date state and may request year data.
+     * @sideEffects Calls onDateSelect with the offset local date.
      */
     const handleRelativeDateSelect = (dayOffset: number): void => {
-        handleDateSelect(addCalendarDays(selectedDate, dayOffset));
+        onDateSelect(addCalendarDays(selectedDate, dayOffset));
     };
 
     return (
-        <div style={{ 
-            flex: 1, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            padding: '20px',
-            height: '100%'
-        }}>
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'flex-start', 
-                gap: '20px',
-                padding: '20px 0'
-            }}>
-                <StargazerCalendar 
-                    year={year} 
-                    celestialData={celestialData}
-                    onYearChange={onYearChange}
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
+        <div className="main-pane">
+            {currentCelestialDay && (
+                <DateInfoDisplayChip
+                    celestialDay={currentCelestialDay}
+                    onNextDay={() => handleRelativeDateSelect(1)}
+                    onPreviousDay={() => handleRelativeDateSelect(-1)}
                 />
-                {currentCelestialDay && (
-                    <DateInfoDisplayChip
-                        celestialDay={currentCelestialDay}
-                        onNextDay={() => handleRelativeDateSelect(1)}
-                        onPreviousDay={() => handleRelativeDateSelect(-1)}
-                    />
-                )}
-            </div>
+            )}
         </div>
     );
 }

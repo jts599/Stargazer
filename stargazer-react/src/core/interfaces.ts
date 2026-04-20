@@ -20,6 +20,15 @@ export type CelestialBody = typeof CelestialBody[keyof typeof CelestialBody];
 export type UtcInstant = Date;
 
 /**
+ * User-selected observing location and fixed timezone offset.
+ */
+export interface IStargazerLocation {
+    latitude: number;
+    longitude: number;
+    timezone: number;
+}
+
+/**
  * ICelestialDefinition represents the rise and set times of celestial bodies.
  * Values are optional because the Navy tables omit events on some dates.
  */
