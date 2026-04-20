@@ -35,8 +35,13 @@ export interface ICelestialDay {
     date: Date;
     timezone: number;
     sun?: ICelectialDefinition;
+    civilTwilight?: ICelectialDefinition;
+    nauticalTwilight?: ICelectialDefinition;
+    astronomicalTwilight?: ICelectialDefinition;
     moon?: ICelectialDefinition;
     illuminationPercentage?: number;
+    moonCycle?: IMoonFunctionDefinition;
+    moonCycles?: IMoonFunctionDefinition[];
     moonFunctionConstants?: IMoonFunctionDefinition;
     stargazingScore?: number;
     percentileScore?: number;

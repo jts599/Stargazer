@@ -2,6 +2,7 @@ import { formatUtcInstantForTimezone } from "../../core/helpers";
 import type { ICelestialDay } from "../../core/interfaces";
 import React from "react";
 import { Moon } from "../Moon/Moon";
+import { DayTimelineChart } from "./DayTimelineChart";
 import "../../components/Moon/Moon.css";
 import "./DateInfoDisplayChip.css";
 
@@ -12,6 +13,8 @@ const MIN_SCORE_CHANNEL = 34;
 export interface DateDisplayProps {
     celestialDay: ICelestialDay;
     isWaxing?: boolean;
+    onNextDay?: () => void;
+    onPreviousDay?: () => void;
 }
 
 /**
@@ -20,11 +23,17 @@ export interface DateDisplayProps {
  * @returns Date information card with rise/set times, moon phase, and score.
  * @sideEffects None.
  */
-export function DateInfoDisplayChip({ celestialDay, isWaxing }: DateDisplayProps): React.ReactElement {
+export function DateInfoDisplayChip({ celestialDay, isWaxing, onNextDay, onPreviousDay }: DateDisplayProps): React.ReactElement {
     const date = new Date(celestialDay.date);
     const debug = false;
     const timezone = celestialDay.timezone;
     const illumination = PERCENT_SCALE * (celestialDay.illuminationPercentage ?? 0);
+    const weekdayText = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const dateText = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
     const illumination255 = (celestialDay.percentileScore ?? 0) * RGB_CHANNEL_MAX / PERCENT_SCALE;
     const illuminationRed = Math.max((RGB_CHANNEL_MAX - illumination255), MIN_SCORE_CHANNEL);
@@ -37,13 +46,38 @@ export function DateInfoDisplayChip({ celestialDay, isWaxing }: DateDisplayProps
     return (
         <div className="date-info-card">
             <div className="date-info-card-content">
+                <div
+                    className="date-info-score-badge"
+                    aria-label={`Stargazing score ${celestialDay?.percentileScore ?? "No score"}`}
+                    tabIndex={0}
+                    style={{ backgroundColor: backgroundColor, border: `1px solid ${borderColor}`, color: color }}
+                >
+                    {celestialDay?.percentileScore}
+                    <div className="date-info-score-tooltip">Stargazing Score</div>
+                </div>
                 <div className="date-info-header">
-                    {date.toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    })}
+                    <button
+                        className="date-info-day-nav"
+                        type="button"
+                        aria-label="Previous day"
+                        onClick={onPreviousDay}
+                    >
+                        &lt;
+                    </button>
+                    <div className="date-info-header-main">
+                        <div className="date-info-date-text">
+                            <div className="date-info-weekday">{weekdayText}</div>
+                            <div className="date-info-calendar-date">{dateText}</div>
+                        </div>
+                    </div>
+                    <button
+                        className="date-info-day-nav"
+                        type="button"
+                        aria-label="Next day"
+                        onClick={onNextDay}
+                    >
+                        &gt;
+                    </button>
                 </div>
                 <div className="date-info-top-row">
                     <div className="date-info-moon-section">
@@ -86,12 +120,7 @@ export function DateInfoDisplayChip({ celestialDay, isWaxing }: DateDisplayProps
                     </div>
                 </div>
 
-                <div className="date-info-score" style={{ backgroundColor: backgroundColor, border: `1px solid ${borderColor}` }}>
-                        <div className="date-info-label" >Stargazing Score</div>
-                        <div className="date-info-score-value" style={{ color: color }}>
-                            {celestialDay?.percentileScore}
-                        </div>
-                    </div>
+                    <DayTimelineChart celestialDay={celestialDay} />
                 </div>
                 
                 {debug && celestialDay.moonFunctionConstants && (

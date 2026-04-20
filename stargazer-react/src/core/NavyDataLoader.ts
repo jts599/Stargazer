@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { CelestialBody, type ICelestialDay, type IMoonCycle, type UtcInstant } from '../core/interfaces';
+import { CelestialBody, type ICelestialDay, type ICelectialDefinition, type IMoonCycle, type IMoonFunctionDefinition, type UtcInstant } from '../core/interfaces';
 import { monthToNavyAbreviation } from './helpers';
 import { addIlluminationDataToCelestialDays } from './NavyIlluminationDataLoader';
 import { scoreDay } from './ScoreCalculation';
@@ -10,7 +10,9 @@ const NAVY_REQUEST_LABEL = "Gathered";
 const NAVY_TIME_FIELD_WIDTH = 4;
 const NAVY_MONTH_FIELD_WIDTH = 11;
 const NAVY_SET_FIELD_OFFSET = 5;
+const MS_PER_MINUTE = 60 * 1000;
 const HOURS_TO_MS = 60 * 60 * 1000;
+const DAY_TO_MS = 24 * HOURS_TO_MS;
 
 /**
  * Loads the raw Navy rise/set table for one celestial body and location.
@@ -53,13 +55,26 @@ export async function CollectCelestialData(
     sunOption: CelestialBody = CelestialBody.AstronomicalTwilight,
     timezone = -6,
 ): Promise<ICelestialDay[]> {
-    const [sunRaw, previousMoonRaw, moonRaw, nextMoonRaw] = await Promise.all([
-        LoadNavyDataRaw(sunOption, year, latitude, longitude, timezone),
+    const [sunRaw, civilTwilightRaw, nauticalTwilightRaw, astronomicalTwilightRaw, previousMoonRaw, moonRaw, nextMoonRaw] = await Promise.all([
+        LoadNavyDataRaw(CelestialBody.Sun, year, latitude, longitude, timezone),
+        LoadNavyDataRaw(CelestialBody.CivilTwilight, year, latitude, longitude, timezone),
+        LoadNavyDataRaw(CelestialBody.NauticalTwilight, year, latitude, longitude, timezone),
+        LoadNavyDataRaw(CelestialBody.AstronomicalTwilight, year, latitude, longitude, timezone),
         LoadNavyDataRaw(CelestialBody.Moon, year - 1, latitude, longitude, timezone),
         LoadNavyDataRaw(CelestialBody.Moon, year, latitude, longitude, timezone),
         LoadNavyDataRaw(CelestialBody.Moon, year + 1, latitude, longitude, timezone),
     ]);
     const sunData = parseNavyTable(sunRaw);
+    const civilTwilightData = parseNavyTable(civilTwilightRaw);
+    const nauticalTwilightData = parseNavyTable(nauticalTwilightRaw);
+    const astronomicalTwilightData = parseNavyTable(astronomicalTwilightRaw);
+    const scoreBoundaryData = __selectScoreBoundaryData(
+        sunOption,
+        sunData,
+        civilTwilightData,
+        nauticalTwilightData,
+        astronomicalTwilightData,
+    );
     const previousYearMoonData = parseNavyTable(previousMoonRaw);
     const moonData = parseNavyTable(moonRaw);
     const nextYearMoonData = parseNavyTable(nextMoonRaw);
@@ -69,14 +84,59 @@ export async function CollectCelestialData(
         ...__toDatedMoonEvents(nextYearMoonData, year + 1, timezone),
     ]);
     const days: ICelestialDay[] = __setupCelestialEvents(year, timezone);
+    const scoreBoundaries = new Map<ICelestialDay, ICelectialDefinition | undefined>();
 
     for (const day of days) {
-        __fillCelestialEvents(day, sunData, moonData, timezone);
+        const scoreBoundary = __fillCelestialEvents(
+            day,
+            {
+                sun: sunData,
+                civilTwilight: civilTwilightData,
+                nauticalTwilight: nauticalTwilightData,
+                astronomicalTwilight: astronomicalTwilightData,
+                moon: moonData,
+                scoreBoundary: scoreBoundaryData,
+            },
+            timezone,
+        );
+        scoreBoundaries.set(day, scoreBoundary);
     }
+    __fillMoonCycles(days, moonCycles, timezone);
     await addIlluminationDataToCelestialDays(year, days, timezone); 
-    __calculateStargazingScores(days, moonCycles);
+    __calculateStargazingScores(days, moonCycles, scoreBoundaries);
     __normalizeStargazingScores(days);
     return days;
+}
+
+/**
+ * Selects the parsed table that should drive the score viewing boundary.
+ * @param sunOption Navy table option requested by the caller for scoring.
+ * @param sunData Parsed true sunrise and sunset rows.
+ * @param civilTwilightData Parsed civil twilight rows.
+ * @param nauticalTwilightData Parsed nautical twilight rows.
+ * @param astronomicalTwilightData Parsed astronomical twilight rows.
+ * @returns Parsed event rows matching the requested scoring boundary.
+ * @sideEffects None.
+ */
+function __selectScoreBoundaryData(
+    sunOption: CelestialBody,
+    sunData: INavyCelestialEvent[],
+    civilTwilightData: INavyCelestialEvent[],
+    nauticalTwilightData: INavyCelestialEvent[],
+    astronomicalTwilightData: INavyCelestialEvent[],
+): INavyCelestialEvent[] {
+    switch (sunOption) {
+        case CelestialBody.Sun:
+            return sunData;
+        case CelestialBody.CivilTwilight:
+            return civilTwilightData;
+        case CelestialBody.NauticalTwilight:
+            return nauticalTwilightData;
+        case CelestialBody.AstronomicalTwilight:
+            return astronomicalTwilightData;
+        default:
+            return astronomicalTwilightData;
+    }
 }
 
 /**
@@ -108,9 +168,13 @@ function __normalizeStargazingScores(days: ICelestialDay[]): ICelestialDay[] {
  * @returns The same day array after score fields are mutated.
  * @sideEffects Mutates stargazingScore and moonFunctionConstants on each day.
  */
-function __calculateStargazingScores(days: ICelestialDay[], moonCycles: IMoonCycle[]): ICelestialDay[] {
+function __calculateStargazingScores(
+    days: ICelestialDay[],
+    moonCycles: IMoonCycle[],
+    scoreBoundaries: Map<ICelestialDay, ICelectialDefinition | undefined>,
+): ICelestialDay[] {
     for (const day of days) {
-        scoreDay(day, moonCycles);
+        scoreDay(day, moonCycles, scoreBoundaries.get(day));
     }
     return days;
 }
@@ -148,27 +212,75 @@ function __setupCelestialEvents(year: number, timezone: number): ICelestialDay[]
  * @returns The same day record after event fields are populated.
  * @sideEffects Mutates day.sun, day.moon, and day.illuminationPercentage.
  */
-function __fillCelestialEvents(day: ICelestialDay, sunEvents: INavyCelestialEvent[], moonEvents: INavyCelestialEvent[], timezone: number): ICelestialDay {
-    const sunEvent = getEventForDate(sunEvents, day.date);
-    const moonEvent = getEventForDate(moonEvents, day.date);
-
-    if (sunEvent) {
-        day.sun = {
-            rise: __tryGetUtcInstant(sunEvent.rise, day.date, timezone),
-            set: __tryGetUtcInstant(sunEvent.set, day.date, timezone)
-        };
-    }
-
-    if (moonEvent) {
-        day.moon = {
-            rise: __tryGetUtcInstant(moonEvent.rise, day.date, timezone),
-            set: __tryGetUtcInstant(moonEvent.set, day.date, timezone)
-        };
-    }
-
+function __fillCelestialEvents(day: ICelestialDay, eventTables: ICelestialEventTables, timezone: number): ICelectialDefinition | undefined {
+    day.sun = __toCelestialDefinition(getEventForDate(eventTables.sun, day.date), day.date, timezone);
+    day.civilTwilight = __toCelestialDefinition(getEventForDate(eventTables.civilTwilight, day.date), day.date, timezone);
+    day.nauticalTwilight = __toCelestialDefinition(getEventForDate(eventTables.nauticalTwilight, day.date), day.date, timezone);
+    day.astronomicalTwilight = __toCelestialDefinition(getEventForDate(eventTables.astronomicalTwilight, day.date), day.date, timezone);
+    day.moon = __toCelestialDefinition(getEventForDate(eventTables.moon, day.date), day.date, timezone);
     day.illuminationPercentage = 0;
 
-    return day;
+    return __toCelestialDefinition(getEventForDate(eventTables.scoreBoundary, day.date), day.date, timezone);
+}
+
+/**
+ * Converts one parsed Navy row into a public rise/set definition.
+ * @param event Parsed Navy row for one local date, or null when absent.
+ * @param date Local date associated with the row.
+ * @param timezone Fixed UTC offset in hours used by the Navy row.
+ * @returns Rise/set definition, or undefined when both events are missing.
+ * @sideEffects None.
+ */
+function __toCelestialDefinition(event: INavyCelestialEvent | null, date: Date, timezone: number): ICelectialDefinition | undefined {
+    if (!event) {
+        return undefined;
+    }
+
+    const definition = {
+        rise: __tryGetUtcInstant(event.rise, date, timezone),
+        set: __tryGetUtcInstant(event.set, date, timezone),
+    };
+
+    if (!definition.rise && !definition.set) {
+        return undefined;
+    }
+
+    return definition;
+}
+
+/**
+ * Adds the moonrise-to-moonrise cycle that overlaps each local day.
+ * @param days Day records to enrich.
+ * @param moonCycles Chronological moon cycles surrounding the loaded year.
+ * @param timezone Fixed UTC offset in hours associated with the local dates.
+ * @returns The same day array after moonCycle fields are assigned where available.
+ * @sideEffects Mutates day.moonCycle on matching records.
+ */
+function __fillMoonCycles(days: ICelestialDay[], moonCycles: IMoonCycle[], timezone: number): ICelestialDay[] {
+    for (const day of days) {
+        const dayStartMs = Date.UTC(day.date.getFullYear(), day.date.getMonth(), day.date.getDate()) - timezone * HOURS_TO_MS;
+        const dayEndMs = dayStartMs + DAY_TO_MS;
+        const cycles = moonCycles.filter(candidate => candidate.startRise.getTime() < dayEndMs && candidate.endRise.getTime() > dayStartMs);
+        day.moonCycles = cycles.map(__toMoonFunctionDefinition);
+        day.moonCycle = day.moonCycles[0];
+    }
+
+    return days;
+}
+
+/**
+ * Converts an internal moon cycle to display metadata.
+ * @param cycle Moon cycle selected for a local day.
+ * @returns Public moon function definition in minute units.
+ * @sideEffects None.
+ */
+function __toMoonFunctionDefinition(cycle: IMoonCycle): IMoonFunctionDefinition {
+    return {
+        cycleStart: cycle.startRise,
+        cycleEnd: cycle.endRise,
+        periodMinutes: cycle.periodMs / MS_PER_MINUTE,
+        visibleDurationMinutes: cycle.visibleDurationMs ? cycle.visibleDurationMs / MS_PER_MINUTE : undefined,
+    };
 }
 
 /**
@@ -283,6 +395,15 @@ export interface INavyCelestialEvent {
 interface IDatedMoonEvent {
     rise?: UtcInstant;
     set?: UtcInstant;
+}
+
+interface ICelestialEventTables {
+    sun: INavyCelestialEvent[];
+    civilTwilight: INavyCelestialEvent[];
+    nauticalTwilight: INavyCelestialEvent[];
+    astronomicalTwilight: INavyCelestialEvent[];
+    moon: INavyCelestialEvent[];
+    scoreBoundary: INavyCelestialEvent[];
 }
 
 /**

@@ -1,0 +1,102 @@
+.day-timeline-chart {
+  margin-top: 14px;
+  width: 100%;
+}
+
+.day-timeline-title {
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.day-timeline-viewport {
+  position: relative;
+}
+
+.day-timeline-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #10241f;
+  border: 1px solid rgba(126, 167, 153, 0.32);
+  border-radius: 8px;
+}
+
+.day-timeline-band {
+  cursor: pointer;
+}
+
+.day-timeline-band:focus {
+  outline: none;
+  stroke: rgba(255, 255, 255, 0.88);
+  stroke-width: 2;
+}
+
+.day-timeline-band.night {
+  fill: #050505;
+}
+
+.day-timeline-band.astronomical {
+  fill: #181818;
+}
+
+.day-timeline-band.nautical {
+  fill: #303030;
+}
+
+.day-timeline-band.civil {
+  fill: #565656;
+}
+
+.day-timeline-band.daylight {
+  fill: #a7a7a7;
+}
+
+.day-timeline-marker {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1;
+}
+
+.day-timeline-moon-path {
+  fill: none;
+  pointer-events: none;
+  stroke: #ffffff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.7));
+}
+
+.day-timeline-tooltip {
+  background: rgba(5, 10, 9, 0.94);
+  border: 1px solid rgba(226, 232, 240, 0.26);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  left: 50%;
+  line-height: 1.35;
+  max-width: min(220px, calc(100% - 16px));
+  min-width: 150px;
+  padding: 8px 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, calc(-100% - 8px));
+  z-index: 2;
+}
+
+.day-timeline-tooltip-title {
+  color: #ffffff;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.day-timeline-labels {
+  color: #94a3b8;
+  display: flex;
+  font-size: 0.75rem;
+  justify-content: space-between;
+  margin-top: 6px;
+}

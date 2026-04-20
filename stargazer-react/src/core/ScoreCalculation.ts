@@ -1,4 +1,4 @@
-import type { ICelestialDay, IMoonCycle, IMoonFunctionDefinition } from "./interfaces";
+import type { ICelestialDay, ICelectialDefinition, IMoonCycle, IMoonFunctionDefinition } from "./interfaces";
 
 const VIEWING_WINDOW_MS = 3 * 60 * 60 * 1000;
 const INTEGRATION_STEP_MS = 60 * 1000;
@@ -8,16 +8,17 @@ const MS_PER_MINUTE = 60000;
  * Scores a day by integrating moon presence during the first three hours after sunset.
  * @param day Day record with sun set time and illumination data.
  * @param moonCycles Moonrise-to-moonrise cycles surrounding the day.
+ * @param viewingBoundary Rise/set pair whose set event starts the viewing window.
  * @returns Nothing; score fields are written directly onto the day record.
  * @sideEffects Mutates day.stargazingScore and day.moonFunctionConstants.
  */
-export function scoreDay(day: ICelestialDay, moonCycles: IMoonCycle[]): void {
-    if (!day.sun?.set) {
+export function scoreDay(day: ICelestialDay, moonCycles: IMoonCycle[], viewingBoundary: ICelectialDefinition | undefined = day.sun): void {
+    if (!viewingBoundary?.set) {
         __setDefaultScores(day);
         return;
     }
 
-    const startMs = day.sun.set.getTime();
+    const startMs = viewingBoundary.set.getTime();
     const endMs = startMs + VIEWING_WINDOW_MS;
     const overlapCycles = moonCycles.filter(cycle => cycle.startRise.getTime() < endMs && cycle.endRise.getTime() > startMs);
 
