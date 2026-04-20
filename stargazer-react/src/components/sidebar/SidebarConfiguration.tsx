@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { searchLocation } from '../../core/geocoding';
 import type { IStargazerLocation } from '../../core/interfaces';
 import {
   getTimezoneIdForCoordinates,
@@ -8,6 +9,8 @@ import {
   isValidCoordinate,
   roundCoordinate,
 } from '../../core/timezone';
+import locationIcon from '../../resources/icons/location.svg';
+import searchIcon from '../../resources/icons/search.svg';
 
 interface SidebarConfigurationProps {
   latitude: number;
@@ -24,10 +27,24 @@ interface Coordinates {
   longitude: number;
 }
 
-type LocationStatus = 'applied-location' | 'browser-pending' | 'browser-success' | 'browser-denied' | 'browser-unavailable' | 'timezone-unavailable';
+type LocationStatus = 'applied-location'
+  | 'browser-pending'
+  | 'browser-success'
+  | 'browser-denied'
+  | 'browser-unavailable'
+  | 'search-pending'
+  | 'search-success'
+  | 'search-empty'
+  | 'search-failed'
+  | 'timezone-unavailable';
 
 const DEFAULT_MAP_ZOOM = 8;
 const BROWSER_LOCATION_ZOOM = 10;
+const GEOLOCATION_OPTIONS: PositionOptions = {
+  enableHighAccuracy: false,
+  maximumAge: 300000,
+  timeout: 10000,
+};
 const MAP_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
@@ -51,6 +68,10 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
   const [draftLongitude, setDraftLongitude] = useState(longitude);
   const [draftTimezone, setDraftTimezone] = useState(timezone);
   const [draftTimezoneId, setDraftTimezoneId] = useState<string | undefined>(timezoneId);
+  const [locationSearch, setLocationSearch] = useState('');
+  const [lastSearchResultName, setLastSearchResultName] = useState<string | undefined>();
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [isLocatingBrowser, setIsLocatingBrowser] = useState(shouldUseBrowserLocationDefault);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>(
     shouldUseBrowserLocationDefault ? 'browser-pending' : 'applied-location',
   );
@@ -59,10 +80,10 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
   /**
    * Updates coordinate and timezone drafts from a map or browser location.
    * @param coordinates Coordinate pair selected by the map or browser geolocation.
-   * @returns Nothing.
+   * @returns True when coordinates and timezone are usable; otherwise false.
    * @sideEffects Mutates local React state for draft coordinates and timezone fields.
    */
-  const applyCoordinateDraft = useCallback((coordinates: Coordinates): void => {
+  const applyCoordinateDraft = useCallback((coordinates: Coordinates): boolean => {
     const nextLatitude = roundCoordinate(coordinates.latitude);
     const nextLongitude = roundCoordinate(coordinates.longitude);
     const nextTimezoneId = getTimezoneIdForCoordinates(nextLatitude, nextLongitude);
@@ -75,11 +96,12 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
 
     if (nextTimezoneId === undefined || nextTimezone === undefined) {
       setLocationStatus('timezone-unavailable');
-      return;
+      return false;
     }
 
     setDraftTimezoneId(nextTimezoneId);
     setDraftTimezone(nextTimezone);
+    return true;
   }, [selectedDate]);
 
   useEffect(() => {
@@ -96,29 +118,119 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
     }
 
     setLocationStatus('browser-pending');
+    setIsLocatingBrowser(true);
+
+    if (!('geolocation' in navigator)) {
+      setLocationStatus('browser-unavailable');
+      setIsLocatingBrowser(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsLocatingBrowser(false);
+
+        if (userEditedLocation.current) {
+          setLocationStatus('browser-success');
+          return;
+        }
+
+        const appliedDraft = applyCoordinateDraft({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+
+        if (appliedDraft) {
+          setLocationStatus('browser-success');
+        }
+      },
+      () => {
+        setIsLocatingBrowser(false);
+        setLocationStatus('browser-denied');
+      },
+      GEOLOCATION_OPTIONS,
+    );
+  }, [applyCoordinateDraft, shouldUseBrowserLocationDefault]);
+
+  /**
+   * Searches for the typed location and updates only the local draft marker.
+   * @returns Promise that resolves after search state is updated.
+   * @throws Does not throw; request failures are converted to status text.
+   * @sideEffects Performs one geocoding request and mutates draft location state.
+   */
+  const handleLocationSearch = async (): Promise<void> => {
+    const trimmedSearch = locationSearch.trim();
+
+    if (trimmedSearch.length === 0) {
+      setLocationStatus('search-empty');
+      return;
+    }
+
+    userEditedLocation.current = true;
+    setIsSearchingLocation(true);
+    setLocationStatus('search-pending');
+    setLastSearchResultName(undefined);
+
+    try {
+      const result = await searchLocation(trimmedSearch);
+
+      if (result === undefined) {
+        setLocationStatus('search-empty');
+        return;
+      }
+
+      const appliedDraft = applyCoordinateDraft(result);
+
+      setLastSearchResultName(result.displayName);
+
+      if (appliedDraft) {
+        setLocationStatus('search-success');
+      }
+    } catch {
+      setLocationStatus('search-failed');
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
+
+  /**
+   * Requests the browser's current position and updates only the draft marker.
+   * @returns Nothing.
+   * @throws Does not throw; browser failures are converted to status text.
+   * @sideEffects Requests browser geolocation and mutates draft location state.
+   */
+  const handleCurrentLocation = (): void => {
+    userEditedLocation.current = true;
 
     if (!('geolocation' in navigator)) {
       setLocationStatus('browser-unavailable');
       return;
     }
 
+    setIsLocatingBrowser(true);
+    setLocationStatus('browser-pending');
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setLocationStatus('browser-success');
+        setIsLocatingBrowser(false);
+        setLastSearchResultName(undefined);
 
-        if (userEditedLocation.current) {
-          return;
-        }
-
-        applyCoordinateDraft({
+        const appliedDraft = applyCoordinateDraft({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
+
+        if (appliedDraft) {
+          setLocationStatus('browser-success');
+        }
       },
-      () => setLocationStatus('browser-denied'),
-      { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
+      () => {
+        setIsLocatingBrowser(false);
+        setLocationStatus('browser-denied');
+      },
+      GEOLOCATION_OPTIONS,
     );
-  }, [applyCoordinateDraft, shouldUseBrowserLocationDefault]);
+  };
 
   /**
    * Submits the draft location to the parent component.
@@ -144,7 +256,23 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
    */
   const applyUserCoordinateDraft = (coordinates: Coordinates): void => {
     userEditedLocation.current = true;
+    setLastSearchResultName(undefined);
     applyCoordinateDraft(coordinates);
+  };
+
+  /**
+   * Runs location search when Enter is pressed inside the search field.
+   * @param event Keyboard event from the search input.
+   * @returns Nothing.
+   * @sideEffects Prevents form submission and starts geocoding on Enter.
+   */
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+    void handleLocationSearch();
   };
 
   const markerIcon = useMemo(createLocationMarkerIcon, []);
@@ -158,6 +286,40 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
   return (
     <div className="configuration-container">
       <form className="location-form" onSubmit={handleSubmit}>
+        <div className="location-search-controls">
+          <label className="location-search-label">
+            Search location
+            <input
+              type="search"
+              value={locationSearch}
+              onChange={(event) => setLocationSearch(event.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="City, park, or address"
+            />
+          </label>
+          <div className="location-search-actions">
+            <button
+              type="button"
+              aria-label={isSearchingLocation ? 'Searching location' : 'Search location'}
+              className="location-icon-action"
+              disabled={isSearchingLocation}
+              title={isSearchingLocation ? 'Searching location' : 'Search location'}
+              onClick={() => void handleLocationSearch()}
+            >
+              <img className="location-action-icon" src={searchIcon} alt="" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              aria-label={isLocatingBrowser ? 'Locating current position' : 'Use current location'}
+              className="location-icon-action"
+              disabled={isLocatingBrowser}
+              title={isLocatingBrowser ? 'Locating current position' : 'Use current location'}
+              onClick={handleCurrentLocation}
+            >
+              <img className="location-action-icon" src={locationIcon} alt="" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
         <div className="location-map-panel">
           <MapContainer
             center={[latitude, longitude]}
@@ -188,7 +350,12 @@ export function SidebarConfiguration(props: SidebarConfigurationProps): React.Re
             )}
           </MapContainer>
         </div>
-        <p className="location-status">{getLocationStatusText(locationStatus, timezoneLabel)}</p>
+        {shouldShowLocationStatus(locationStatus) && (
+          <p className="location-status">{getLocationStatusText(locationStatus, timezoneLabel)}</p>
+        )}
+        {lastSearchResultName !== undefined && (
+          <p className="location-result-name">{lastSearchResultName}</p>
+        )}
         <div className="location-readout-grid" aria-label="Selected location details">
           <ReadOnlyLocationValue label="Latitude" value={formatCoordinate(draftLatitude)} />
           <ReadOnlyLocationValue label="Longitude" value={formatCoordinate(draftLongitude)} />
@@ -342,7 +509,37 @@ function getLocationStatusText(status: LocationStatus, timezoneLabel: string): s
     return `Timezone: ${timezoneLabel}. Browser location is not supported.`;
   }
 
+  if (status === 'search-pending') {
+    return `Timezone: ${timezoneLabel}. Searching for that location.`;
+  }
+
+  if (status === 'search-success') {
+    return `Timezone: ${timezoneLabel}. Search result loaded.`;
+  }
+
+  if (status === 'search-empty') {
+    return `Timezone: ${timezoneLabel}. No matching location found.`;
+  }
+
+  if (status === 'search-failed') {
+    return `Timezone: ${timezoneLabel}. Location search failed.`;
+  }
+
   return `Timezone lookup unavailable. Adjust the UTC offset before applying.`;
+}
+
+/**
+ * Decides whether the location card needs a transient status message.
+ * @param status Current location lookup state.
+ * @returns True for geocoding search or coordinate error states that need feedback.
+ * @throws Does not throw.
+ * @sideEffects None.
+ */
+function shouldShowLocationStatus(status: LocationStatus): boolean {
+  return status === 'search-pending'
+    || status === 'search-empty'
+    || status === 'search-failed'
+    || status === 'timezone-unavailable';
 }
 
 export default SidebarConfiguration;
