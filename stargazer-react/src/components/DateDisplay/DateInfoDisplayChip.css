@@ -1,16 +1,24 @@
 .date-info-card {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   border-radius: 16px;
+  box-sizing: border-box;
   padding: 24px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(148, 163, 184, 0.2);
   color: #f8fafc;
-  max-width: 500px;
+  max-width: 550px;
+  width: min(550px, 100%);
   margin: 0 auto;
   backdrop-filter: blur(10px);
   display: flex;
+  flex: 0 1 550px;
   flex-direction: column;
   position: relative;
+}
+
+.date-info-card-content {
+  min-width: 0;
+  width: 100%;
 }
 
 .date-info-header {
@@ -31,10 +39,12 @@
   display: flex;
   justify-content: center;
   min-width: 0;
+  width: 230px;
 }
 
 .date-info-date-text {
   min-width: 0;
+  width: 100%;
 }
 
 .date-info-weekday {
@@ -77,10 +87,12 @@
   cursor: help;
   display: inline-flex;
   font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   height: 30px;
   justify-content: center;
-  min-width: 38px;
+  width: 46px;
+  box-sizing: border-box;
   padding: 0 8px;
   position: absolute;
   right: 14px;
@@ -122,6 +134,7 @@
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+  gap: 18px;
   padding-bottom: 10px;
 }
 
@@ -130,6 +143,7 @@
   align-items: center;
   justify-content: center;
   gap: 20px;
+  flex: 0 0 182px;
   margin: 24px 24px 0px 24px;
   padding: 0px 20px 0px 20px;
 }
@@ -139,6 +153,7 @@
   font-weight: 600;
   color: #e2e8f0;
   padding-top: 10px;
+  width: 170px;
 }
 
 .date-info-moon-phase-subtitle {
@@ -150,8 +165,10 @@
 .date-info-data-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  flex: 1 1 0;
   gap: 16px;
   margin-top: 20px;
+  min-width: 0;
 }
 
 .date-info-data-item {
@@ -161,6 +178,7 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   border: 1px solid rgba(148, 163, 184, 0.1);
+  min-width: 0;
 }
 
 .date-info-label {
@@ -173,7 +191,9 @@
 .date-info-value {
   font-size: 1rem;
   color: #f1f5f9;
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
+  min-width: 8ch;
 }
 
 .date-info-debug {

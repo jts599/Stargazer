@@ -12,6 +12,7 @@ const SVG_WIDTH = 720;
 const SVG_HEIGHT = 120;
 const BAND_TOP = 0;
 const BAND_HEIGHT = SVG_HEIGHT;
+const BAND_OVERLAP_X = 0.75;
 const MOON_BASELINE = BAND_TOP + BAND_HEIGHT;
 const MOON_AMPLITUDE = 96;
 const SAMPLE_STEP_MINUTES = 6;
@@ -37,7 +38,7 @@ interface TimelineTooltip {
 /**
  * Renders a selected day's local 24-hour light and moon-visibility timeline.
  * @param props Selected celestial day containing sun, twilight, and moon-cycle data.
- * @returns SVG timeline with grayscale twilight bands and the positive moon sine wave.
+ * @returns SVG timeline with blue twilight bands and the positive moon sine wave.
  * @sideEffects None.
  */
 export function DayTimelineChart({ celestialDay }: DayTimelineChartProps): React.ReactElement {
@@ -59,24 +60,14 @@ export function DayTimelineChart({ celestialDay }: DayTimelineChartProps): React
                             height={BAND_HEIGHT}
                             role="img"
                             tabIndex={0}
-                            width={minuteToX(segment.endMinute) - minuteToX(segment.startMinute)}
-                            x={minuteToX(segment.startMinute)}
+                            width={getSegmentWidth(segment)}
+                            x={getSegmentX(segment)}
                             y={BAND_TOP}
                             onBlur={() => setTooltip(null)}
                             onFocus={() => setTooltip(buildFocusedTooltip(segment, sunriseTime, sunsetTime))}
                             onPointerEnter={event => setTooltip(buildPointerTooltip(event, segment, sunriseTime, sunsetTime))}
                             onPointerLeave={() => setTooltip(null)}
                             onPointerMove={event => setTooltip(buildPointerTooltip(event, segment, sunriseTime, sunsetTime))}
-                        />
-                    ))}
-                    {buildHourMarkers().map(marker => (
-                        <line
-                            key={marker}
-                            className="day-timeline-marker"
-                            x1={minuteToX(marker)}
-                            x2={minuteToX(marker)}
-                            y1={BAND_TOP}
-                            y2={BAND_TOP + BAND_HEIGHT}
                         />
                     ))}
                     {moonPath && <path className="day-timeline-moon-path" d={moonPath} />}
@@ -179,7 +170,7 @@ function getSegmentName(className: string): string {
 }
 
 /**
- * Builds ordered grayscale bands for daylight, each twilight type, and full night.
+ * Builds ordered bands for daylight, each twilight type, and full night.
  * @param day Selected celestial day with optional twilight definitions.
  * @returns Timeline segments clamped to the local 24-hour day.
  * @sideEffects None.
@@ -344,6 +335,28 @@ function minuteToX(minute: number): number {
 }
 
 /**
+ * Converts a timeline segment start into an overlapped SVG x-coordinate.
+ * @param segment Timeline segment to position.
+ * @returns Segment x-coordinate, expanded slightly left except at the chart edge.
+ * @sideEffects None.
+ */
+function getSegmentX(segment: TimelineSegment): number {
+    return Math.max(0, minuteToX(segment.startMinute) - BAND_OVERLAP_X);
+}
+
+/**
+ * Converts a timeline segment duration into an overlapped SVG width.
+ * @param segment Timeline segment to size.
+ * @returns Segment width, expanded slightly to cover anti-aliased seams.
+ * @sideEffects None.
+ */
+function getSegmentWidth(segment: TimelineSegment): number {
+    const startX = getSegmentX(segment);
+    const endX = Math.min(SVG_WIDTH, minuteToX(segment.endMinute) + BAND_OVERLAP_X);
+    return endX - startX;
+}
+
+/**
  * Converts normalized moon height into an SVG y-coordinate.
  * @param height Normalized positive moon height.
  * @returns Vertical coordinate within the moon drawing area.
@@ -371,15 +384,6 @@ function clampMinute(minute: number): number {
  */
 function clampPercent(percent: number): number {
     return Math.min(100, Math.max(0, percent));
-}
-
-/**
- * Provides major hour markers for the chart.
- * @returns Local day minutes for 6-hour intervals.
- * @sideEffects None.
- */
-function buildHourMarkers(): number[] {
-    return [0, 360, 720, 1080, MINUTES_PER_DAY];
 }
 
 /**

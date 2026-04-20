@@ -18,7 +18,7 @@
   display: block;
   width: 100%;
   height: auto;
-  background: #10241f;
+  background: #020617;
   border: 1px solid rgba(126, 167, 153, 0.32);
   border-radius: 8px;
 }
@@ -34,28 +34,23 @@
 }
 
 .day-timeline-band.night {
-  fill: #050505;
+  fill: #020617;
 }
 
 .day-timeline-band.astronomical {
-  fill: #181818;
+  fill: #0f172a;
 }
 
 .day-timeline-band.nautical {
-  fill: #303030;
+  fill: #1e3a8a;
 }
 
 .day-timeline-band.civil {
-  fill: #565656;
+  fill: #2563eb;
 }
 
 .day-timeline-band.daylight {
-  fill: #a7a7a7;
-}
-
-.day-timeline-marker {
-  stroke: rgba(255, 255, 255, 0.16);
-  stroke-width: 1;
+  fill: #3b82f6;
 }
 
 .day-timeline-moon-path {
