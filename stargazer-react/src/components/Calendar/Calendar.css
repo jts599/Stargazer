@@ -1,301 +1,74 @@
 .calendar {
-  width: 100%;
-  max-width: 380px;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  padding: 8px 16px 16px 16px;
+  box-sizing: border-box;
+  color: #f5f7fa;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  user-select: none;
-  color: #f8fafc;
-  backdrop-filter: blur(10px);
-  box-sizing: border-box;
+  max-width: 380px;
+  width: 100%;
 }
 
-.calendar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+.calendar .MuiDateCalendar-root {
+  color: #f5f7fa;
+  max-height: none;
+  width: 100%;
 }
 
-.calendar-nav-button {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  font-size: 16px;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
+.calendar .MuiPickersCalendarHeader-root {
+  color: #f5f7fa;
+  margin-top: 0;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.calendar .MuiPickersCalendarHeader-label {
+  color: #f5f7fa;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.calendar .MuiIconButton-root {
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #cbd5e1;
-  transition: all 0.3s ease;
-  font-weight: bold;
+  color: #d7dde5;
 }
 
-.calendar-nav-button:hover {
-  background: rgba(59, 130, 246, 0.2);
-  color: #e2e8f0;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+.calendar .MuiIconButton-root:hover,
+.calendar .MuiIconButton-root:focus-visible {
+  background-color: #314154;
 }
 
-.calendar-nav-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
-}
-
-.calendar-month-year {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 1;
-}
-
-.calendar-month-spacer {
-  width: 40px; /* Same width as today container to balance layout */
-}
-
-.calendar-month-year h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #e2e8f0;
-  text-align: center;
-  flex: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.calendar-today-container {
-  width: 40px; /* Fixed width to reserve space */
-  display: flex;
-  justify-content: flex-end; /* Align button to right of container (closer to month) */
-  align-items: center;
-}
-
-.calendar-today-button {
-  background: rgba(59, 130, 246, 0.15);
-  color: #94a3b8;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px; /* Add space to the left */
-}
-
-.calendar-today-button:hover {
-  background: rgba(59, 130, 246, 0.25);
-  color: #cbd5e1;
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-}
-
-.calendar-today-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
-}
-
-.calendar-today-button:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-}
-
-.calendar-today-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.3);
-}
-
-.calendar-today-button:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-}
-
-.calendar-today-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-  margin-bottom: 6px;
-  margin-top: 12px;
-  width: 100%;
-}
-
-.calendar-weekday {
-  text-align: center;
-  font-size: 10px;
+.calendar .MuiDayCalendar-weekDayLabel {
+  color: #a8b0bb;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #94a3b8;
-  padding: 6px 1px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  box-sizing: border-box;
 }
 
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-  width: 100%;
-}
-
-.calendar-day {
-  aspect-ratio: 1;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 500;
+.calendar .MuiPickersDay-root {
   border-radius: 6px;
-  transition: all 0.3s ease;
-  position: relative;
-  min-height: 32px;
-  max-width: 100%;
-  backdrop-filter: blur(5px);
-  box-sizing: border-box;
-}
-
-.calendar-day.current-month {
-  color: #f1f5f9;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(148, 163, 184, 0.2);
-  font-weight: 600;
-}
-
-.calendar-day.other-month {
-  color: #64748b;
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(148, 163, 184, 0.05);
-  opacity: 0.6;
-  font-weight: 400;
-}
-
-.calendar-day:hover:not(.disabled) {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-}
-
-.calendar-day.other-month:hover:not(.disabled) {
-  color: #94a3b8;
-  opacity: 0.8;
-  background: rgba(59, 130, 246, 0.05);
-}
-
-.calendar-day.today {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #fff;
   font-weight: 700;
-  border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
-.calendar-day.today:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+.calendar .MuiPickersDay-root:hover,
+.calendar .MuiPickersDay-root:focus-visible {
+  background-color: #314154;
 }
 
-.calendar-day.selected {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  font-weight: 700;
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+.calendar .MuiPickersDay-root.Mui-selected,
+.calendar .MuiPickersDay-root.Mui-selected:hover,
+.calendar .MuiPickersDay-root.Mui-selected:focus-visible {
+  background-color: #446a95;
 }
 
-.calendar-day.selected:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+.calendar .MuiPickersDay-today {
+  border-color: #d6923b;
+  background-color: #6f4b1e;
 }
 
-.calendar-day.highlighted {
-  background: rgba(168, 85, 247, 0.2);
-  color: #c4b5fd;
-  font-weight: 600;
-  border-color: rgba(168, 85, 247, 0.4);
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2);
+.calendar .MuiPickersDay-dayOutsideMonth {
+  opacity: 0.45;
 }
 
-.calendar-day.highlighted:hover {
-  background: rgba(168, 85, 247, 0.3);
-  color: #ddd6fe;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
-}
-
-.calendar-day.highlighted.selected {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-}
-
-.calendar-day.disabled {
-  color: #475569;
-  cursor: not-allowed;
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(71, 85, 105, 0.2);
-  opacity: 0.4;
-}
-
-.calendar-day.disabled:hover {
-  transform: none;
-  background: rgba(0, 0, 0, 0.1);
-  box-shadow: none;
-  border-color: rgba(71, 85, 105, 0.2);
-}
-
-/* Responsive design */
 @media (max-width: 480px) {
-  .calendar {
-    padding: 12px;
-    max-width: 100%;
-  }
-
-  .calendar-month-year h2 {
-    font-size: 14px;
-    min-width: 120px;
-  }
-
-  .calendar-day {
-    min-height: 28px;
-    font-size: 10px;
-  }
-
-  .calendar-weekday {
-    font-size: 9px;
-    padding: 4px 1px;
-  }
-
-  .calendar-grid,
-  .calendar-weekdays {
-    gap: 2px;
+  .calendar .MuiPickersSlideTransition-root,
+  .calendar .MuiDayCalendar-monthContainer {
+    min-height: 210px;
   }
 }

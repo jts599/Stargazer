@@ -12,7 +12,7 @@ interface IStargazerCalendarProps {
 }
 
 /**
- * Renders the yearly stargazing calendar and forwards date/year changes upward.
+ * Renders the stargazing calendar and forwards date/year changes upward.
  * @param props Calendar data, active year, selected date, and optional change callbacks.
  * @returns Calendar wrapped in a constrained layout container.
  * @sideEffects Calls supplied callbacks when the user selects dates.
@@ -55,13 +55,8 @@ export function StargazerCalendar(props: IStargazerCalendarProps): React.ReactEl
             <Calendar
                 selectedDate={currentSelectedDate}
                 onDateSelect={handleDateSelect}
-                highlightedDates={celestialData.map(day => new Date(day.date))}
-                minDate={new Date(year, 0, 1)}
-                maxDate={new Date(year, 11, 31)}
                 dateColorCodeFormatingFunction={getScoreForDate}
             />
         </div>
     );
 }
-
-
